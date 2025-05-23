@@ -43,7 +43,7 @@
 /*!
  * Minimal datarate that can be used by the node
  */
-#define AU915_TX_MIN_DATARATE DR_0
+#define AU915_TX_MIN_DATARATE DR_2
 
 /*!
  * Maximal datarate that can be used by the node
@@ -123,12 +123,12 @@
 /*!
  * Maximum RX window duration
  */
-#define AU915_MAX_RX_WINDOW 3000
+#define AU915_MAX_RX_WINDOW 650
 
 /*!
  * Receive delay 1
  */
-#define AU915_RECEIVE_DELAY1 1000
+#define AU915_RECEIVE_DELAY1 5000
 
 /*!
  * Receive delay 2
@@ -138,7 +138,7 @@
 /*!
  * Join accept delay 1
  */
-#define AU915_JOIN_ACCEPT_DELAY1 5000
+#define AU915_JOIN_ACCEPT_DELAY1 6000
 
 /*!
  * Join accept delay 2

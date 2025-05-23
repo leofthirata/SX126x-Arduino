@@ -27,6 +27,9 @@
 #include "sx126x.h"
 #include "boards/sx126x/sx126x-board.h"
 #include "boards/mcu/timer.h"
+#include "loraEvents.h"
+
+loraEvents_t *_events;
 
 /* Tx and Rx timers
  */
@@ -1375,10 +1378,15 @@ void RadioBgIrqProcess(void)
 			TimerStop(&TxTimeoutTimer);
 			//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
 			SX126xSetOperatingMode(MODE_STDBY_RC);
-			if ((RadioEvents != NULL) && (RadioEvents->TxDone != NULL))
+			if(RadioPublicNetwork.Current == true)
 			{
-				RadioEvents->TxDone();
+				if ((RadioEvents != NULL) && (RadioEvents->TxDone != NULL))
+				{
+					RadioEvents->TxDone();
+				}
 			}
+			if((_events != NULL) && (_events->TxDone != NULL))
+				_events->TxDone(RadioPublicNetwork.Current);
 		}
 
 		if ((irqRegs & IRQ_RX_DONE) == IRQ_RX_DONE)
@@ -1387,7 +1395,9 @@ void RadioBgIrqProcess(void)
 			uint8_t size;
 
 			rx_timeout_handled = true;
-			TimerStop(&RxTimeoutTimer);
+			if (RadioPublicNetwork.Current)
+				TimerStop(&RxTimeoutTimer);
+
 			if (RxContinuous == false)
 			{
 				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
@@ -1411,19 +1421,29 @@ void RadioBgIrqProcess(void)
 				memset(RadioRxPayload, 0, 255);
 				SX126xGetPayload(RadioRxPayload, &size, 255);
 				SX126xGetPacketStatus(&RadioPktStatus);
-				if ((RadioEvents != NULL) && (RadioEvents->RxError))
+				if(RadioPublicNetwork.Current == true)
 				{
-					RadioEvents->RxError();
+					if ((RadioEvents != NULL) && (RadioEvents->RxError))
+					{
+						RadioEvents->RxError();
+					}
+					
 				}
+				if((_events != NULL) && (_events->RxError != NULL))
+					_events->RxError(RadioPublicNetwork.Current);
 			}
 			else
 			{
 				SX126xGetPayload(RadioRxPayload, &size, 255);
 				SX126xGetPacketStatus(&RadioPktStatus);
-				if ((RadioEvents != NULL) && (RadioEvents->RxDone != NULL))
+				if(RadioPublicNetwork.Current == true)
 				{
-					RadioEvents->RxDone(RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt);
+					if ((RadioEvents != NULL) && (RadioEvents->RxDone != NULL))
+						RadioEvents->RxDone(RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt);
+
 				}
+				if((_events != NULL) && (_events->RxDone != NULL))
+					_events->RxDone(RadioPublicNetwork.Current, RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt);
 			}
 		}
 
@@ -1449,10 +1469,13 @@ void RadioBgIrqProcess(void)
 				TimerStop(&TxTimeoutTimer);
 				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
 				SX126xSetOperatingMode(MODE_STDBY_RC);
-				if ((RadioEvents != NULL) && (RadioEvents->TxTimeout != NULL))
+				if(RadioPublicNetwork.Current == true)
 				{
-					RadioEvents->TxTimeout();
+					if ((RadioEvents != NULL) && (RadioEvents->TxTimeout != NULL))
+						RadioEvents->TxTimeout();
 				}
+				if((_events != NULL) && (_events->TxTimeout != NULL))
+					_events->TxTimeout(RadioPublicNetwork.Current, IRQ_TYPE);
 			}
 			else if (SX126xGetOperatingMode() == MODE_RX)
 			{
@@ -1461,10 +1484,13 @@ void RadioBgIrqProcess(void)
 				TimerStop(&RxTimeoutTimer);
 				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
 				SX126xSetOperatingMode(MODE_STDBY_RC);
-				if ((RadioEvents != NULL) && (RadioEvents->RxTimeout != NULL))
+				if(RadioPublicNetwork.Current == true)
 				{
-					RadioEvents->RxTimeout();
+					if ((RadioEvents != NULL) && (RadioEvents->RxTimeout != NULL))
+						RadioEvents->RxTimeout();
 				}
+				if((_events != NULL) && (_events->RxTimeout != NULL))
+					_events->RxTimeout(RadioPublicNetwork.Current, IRQ_TYPE);
 			}
 		}
 
@@ -1497,10 +1523,13 @@ void RadioBgIrqProcess(void)
 				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
 				SX126xSetOperatingMode(MODE_STDBY_RC);
 			}
-			if ((RadioEvents != NULL) && (RadioEvents->RxError != NULL))
+			if(RadioPublicNetwork.Current == true)
 			{
-				RadioEvents->RxError();
+				if ((RadioEvents != NULL) && (RadioEvents->RxError != NULL))
+					RadioEvents->RxError();
 			}
+			if((_events != NULL) && (_events->RxError != NULL))
+				_events->RxError(RadioPublicNetwork.Current);
 		}
 	}
 	if (TimerRxTimeout)
@@ -1510,10 +1539,13 @@ void RadioBgIrqProcess(void)
 		{
 			LOG_LIB("RADIO", "TimerRxTimeout");
 			TimerStop(&RxTimeoutTimer);
-			if ((RadioEvents != NULL) && (RadioEvents->RxTimeout != NULL))
+			if(RadioPublicNetwork.Current == true)
 			{
-				RadioEvents->RxTimeout();
+				if ((RadioEvents != NULL) && (RadioEvents->RxTimeout != NULL))
+					RadioEvents->RxTimeout();
 			}
+			if((_events != NULL) && (_events->RxTimeout != NULL))
+				_events->RxTimeout(RadioPublicNetwork.Current, TIMER_TYPE);
 		}
 	}
 	if (TimerTxTimeout)
@@ -1523,10 +1555,13 @@ void RadioBgIrqProcess(void)
 		{
 			LOG_LIB("RADIO", "TimerTxTimeout");
 			TimerStop(&TxTimeoutTimer);
-			if ((RadioEvents != NULL) && (RadioEvents->TxTimeout != NULL))
+			if(RadioPublicNetwork.Current == true)
 			{
-				RadioEvents->TxTimeout();
+				if ((RadioEvents != NULL) && (RadioEvents->TxTimeout != NULL))
+					RadioEvents->TxTimeout();
 			}
+			if((_events != NULL) && (_events->TxTimeout != NULL))
+				_events->TxTimeout(RadioPublicNetwork.Current, TIMER_TYPE);
 		}
 	}
 }
@@ -1544,4 +1579,9 @@ void RadioIrqProcessAfterDeepSleep(void)
 	IrqFired = true;
 	BoardEnableIrq();
 	RadioBgIrqProcess();
+}
+
+void setLoRaEvents(loraEvents_t *events)
+{
+	_events = events;
 }

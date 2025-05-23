@@ -26,6 +26,8 @@ Maintainer: Miguel Luis ( Semtech ), Gregory Cristian ( Semtech ) and Daniel Jae
 
 extern bool lmh_mac_is_busy;
 
+static lorawanTXParams_t *_txParams;
+
 /*!
  * Maximum PHY layer payload size
  */
@@ -626,7 +628,7 @@ static void OnRadioTxDone(void)
 	// Setup timers
 	if (IsRxWindowsEnabled == true)
 	{
-		LOG_LIB("LM", "OnRadioTxDone => RX Windows #1 %d #2 %d", RxWindow1Delay, RxWindow2Delay);
+		LOG_LIB("LM", "OnRadioTxDone => RX Windows #1 %ld #2 %ld", RxWindow1Delay, RxWindow2Delay);
 
 		TimerSetValue(&RxWindowTimer1, RxWindow1Delay);
 		TimerStart(&RxWindowTimer1);
@@ -2055,7 +2057,7 @@ static LoRaMacStatus_t ScheduleTx(void)
 
 		if ((IsLoRaMacNetworkJoined == JOIN_ONGOING) && (send_join_now))
 		{
-			LOG_LIB("LM", "dutyCycleTimeOff was = %d", dutyCycleTimeOff);
+			LOG_LIB("LM", "dutyCycleTimeOff was = %ld", dutyCycleTimeOff);
 			dutyCycleTimeOff = 0;
 			send_join_now = false;
 			LOG_LIB("LM", "Set send_join_now to false");
@@ -2404,6 +2406,19 @@ LoRaMacStatus_t SendFrameOnChannel(uint8_t channel)
 	{
 		JoinRequestTrials++;
 	}
+	LOG_LIB("LM", "Counter: %ld | Channel = %d | ", UpLinkCounter, channel);
+
+
+	if(_txParams != NULL)
+	{
+		_txParams->AntennaGain = txConfig.AntennaGain; 
+		_txParams->channel = channel;
+		_txParams->Datarate = txConfig.Datarate;
+		_txParams->MaxEirp = txConfig.MaxEirp;
+		_txParams->PktLen = txConfig.PktLen;
+		_txParams->TxPower = txConfig.TxPower;
+		_txParams->UpLinkCounter = UpLinkCounter;
+	}
 
 	// Send now
 	Radio.Send(LoRaMacBuffer, LoRaMacBufferPktLen);
@@ -2448,7 +2463,7 @@ LoRaMacStatus_t SetTxContinuousWave1(uint16_t timeout, uint32_t frequency, uint8
 	return LORAMAC_STATUS_OK;
 }
 
-LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives, LoRaMacCallback_t *callbacks, LoRaMacRegion_t region, eDeviceClass nodeClass, bool region_change)
+LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives, LoRaMacCallback_t *callbacks, LoRaMacRegion_t region, eDeviceClass nodeClass, bool region_change, lorawanTXParams_t *txParams)
 {
 	GetPhyParams_t getPhy;
 	PhyParam_t phyParam;
@@ -2473,7 +2488,8 @@ LoRaMacStatus_t LoRaMacInitialization(LoRaMacPrimitives_t *primitives, LoRaMacCa
 	LoRaMacPrimitives = primitives;
 	LoRaMacCallbacks = callbacks;
 	LoRaMacRegion = region;
-
+	_txParams = txParams;
+	
 	LoRaMacFlags.Value = 0;
 
 	LoRaMacDeviceClass = nodeClass;
@@ -3398,7 +3414,7 @@ LoRaMacStatus_t LoRaMacMcpsRequest(McpsReq_t *mcpsRequest)
 	uint8_t fPort = 0;
 	void *fBuffer;
 	uint16_t fBufferSize;
-	int8_t datarate;
+	int8_t datarate = 0;
 	bool readyToSend = false;
 
 	if (mcpsRequest == NULL)

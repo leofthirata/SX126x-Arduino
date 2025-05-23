@@ -28,6 +28,7 @@
 #include "mac/LoRaMac.h"
 #include "mac/region/Region.h"
 #include "mac/region/RegionAS923.h"
+#include "loraEvents.h"
 
 extern bool force_low_dr_opt;
 
@@ -46,6 +47,7 @@ typedef struct lmh_param_s
 	uint8_t nb_trials;			/**< Number of trials for the join request. */
 	int8_t tx_power;			/**< Uplink power */
 	bool duty_cycle;			/**< Enable or disable the duty cycle control */
+	lorawanTXParams_t *txParam;
 } lmh_param_t;
 
 typedef enum
