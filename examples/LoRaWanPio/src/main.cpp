@@ -1,7 +1,7 @@
-#include <Arduino.h>
+#include "porting.hpp"
 
 #include <LoRaWan-Arduino.h>
-#include <SPI.h>
+//#include <SPI.h>
 
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
 #define SCHED_QUEUE_SIZE 60										  /**< Maximum number of events in the scheduler queue. */
@@ -49,7 +49,7 @@ int PIN_LORA_MOSI = 13;	 // LORA SPI MOSI
 int RADIO_TXEN = -1;	 // LORA ANTENNA TX ENABLE
 int RADIO_RXEN = -1;	 // LORA ANTENNA RX ENABLE
 // Replace PIN_SPI_MISO, PIN_SPI_SCK, PIN_SPI_MOSI with your
-SPIClass SPI_LORA(NRF_SPIM2, 14, 12, 13);
+//SPIClass SPI_LORA(NRF_SPIM2, 14, 12, 13);
 #endif
 
 // Foward declaration
@@ -107,8 +107,8 @@ uint8_t nodeAppsKey[16] = {0xFB, 0xAC, 0xB6, 0x47, 0xF3, 0x58, 0x45, 0xC7, 0x50,
 
 void setup()
 {
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 	// Define the HW configuration between MCU and SX126x
 	hwConfig.CHIP_TYPE = SX1262_CHIP;		  // Example uses an eByte E22 module with an SX1262
@@ -126,15 +126,15 @@ void setup()
 	hwConfig.USE_DIO3_ANT_SWITCH = false;	  // Only Insight ISP4520 module uses DIO3 as antenna control
 
 	// Initialize Serial for debug output
-	Serial.begin(115200);
+	//Serial.begin(115200);
 
-	Serial.println("=====================================");
-	Serial.println("SX126x LoRaWan test");
-	Serial.println("=====================================");
+	//Serial.println("=====================================");
+	//Serial.println("SX126x LoRaWan test");
+	//Serial.println("=====================================");
 
 #ifdef NRF52_SERIES
-	pinMode(30, OUTPUT);
-	digitalWrite(30, HIGH);
+	ctx.gpio_mode(30, OUTPUT);
+	ctx.gpio_set_level(30, HIGH);
 	// Start BLE if we compile for nRF52
 	initBLE();
 #endif
@@ -143,7 +143,7 @@ void setup()
 	uint32_t err_code = lora_hardware_init(hwConfig);
 	if (err_code != 0)
 	{
-		Serial.printf("lora_hardware_init failed - %d\n", err_code);
+		//Serial.println("lora_hardware_init failed - %d\n", err_code);
 	}
 
 
@@ -151,7 +151,7 @@ void setup()
 	err_code = timers_init();
 	if (err_code != 0)
 	{
-		Serial.printf("timers_init failed - %d\n", err_code);
+		//Serial.println("timers_init failed - %d\n", err_code);
 	}
 
 
@@ -167,7 +167,7 @@ void setup()
 	err_code = lmh_init(&lora_callbacks, lora_param_init, true, CLASS_A, LORAMAC_REGION_AS923_3);
 	if (err_code != 0)
 	{
-		Serial.printf("lmh_init failed - %d\n", err_code);
+		//Serial.println("lmh_init failed - %d\n", err_code);
 	}
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -186,7 +186,7 @@ void setup()
 	/// \todo This is for Dragino LPS8 gateway. How about other gateways???
 	if (!lmh_setSubBandChannels(1))
 	{
-		Serial.println("lmh_setSubBandChannels failed. Wrong sub band requested?");
+		//Serial.println("lmh_setSubBandChannels failed. Wrong sub band requested?");
 	}
 
 	// Start Join procedure
@@ -199,16 +199,16 @@ void loop()
 	Radio.IrqProcess();
 #endif
 	// We are on FreeRTOS, give other tasks a chance to run
-	// delay(100);
+	// ctx.delay_ms(100);
 }
 
 /**@brief LoRa function for handling OTAA join failed
 */
 static void lorawan_join_failed_handler(void)
 {
-	Serial.println("OVER_THE_AIR_ACTIVATION failed!");
-	Serial.println("Check your EUI's and Keys's!");
-	Serial.println("Check if a Gateway is in range!");
+	//Serial.println("OVER_THE_AIR_ACTIVATION failed!");
+	//Serial.println("Check your EUI's and Keys's!");
+	//Serial.println("Check if a Gateway is in range!");
 }
 
 /**@brief LoRa function for handling HasJoined event.
@@ -216,9 +216,9 @@ static void lorawan_join_failed_handler(void)
 static void lorawan_has_joined_handler(void)
 {
 #if (OVER_THE_AIR_ACTIVATION != 0)
-	Serial.println("Network Joined");
+	//Serial.println("Network Joined");
 #else
-	Serial.println("OVER_THE_AIR_ACTIVATION != 0");
+	//Serial.println("OVER_THE_AIR_ACTIVATION != 0");
 
 #endif
 	lmh_class_request(CLASS_A);
@@ -233,7 +233,7 @@ static void lorawan_has_joined_handler(void)
  */
 static void lorawan_rx_handler(lmh_app_data_t *app_data)
 {
-	Serial.printf("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
+	//Serial.println("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
 				  app_data->port, app_data->buffsize, app_data->rssi, app_data->snr);
 
 	switch (app_data->port)
@@ -273,7 +273,7 @@ static void lorawan_rx_handler(lmh_app_data_t *app_data)
 
 static void lorawan_confirm_class_handler(DeviceClass_t Class)
 {
-	Serial.printf("switch to class %c done\n", "ABC"[Class]);
+	//Serial.println("switch to class %c done\n", "ABC"[Class]);
 
 	// Informs the server that switch has occurred ASAP
 	m_lora_app_data.buffsize = 0;
@@ -286,7 +286,7 @@ static void send_lora_frame(void)
 	if (lmh_join_status_get() != LMH_SET)
 	{
 		//Not joined, try again later
-		Serial.println("Did not join network, skip sending frame");
+		//Serial.println("Did not join network, skip sending frame");
 		return;
 	}
 
@@ -310,7 +310,7 @@ static void send_lora_frame(void)
 	if (error == LMH_SUCCESS)
 	{
 	}
-	Serial.printf("lmh_send result %d\n", error);
+	//Serial.println("lmh_send result %d\n", error);
 }
 
 /**@brief Function for handling a LoRa tx timer timeout event.
@@ -319,7 +319,7 @@ static void tx_lora_periodic_handler(void)
 {
 	TimerSetValue(&appTimer, LORAWAN_APP_TX_DUTYCYCLE);
 	TimerStart(&appTimer);
-	Serial.println("Sending frame");
+	//Serial.println("Sending frame");
 	send_lora_frame();
 }
 

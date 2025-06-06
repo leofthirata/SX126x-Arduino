@@ -45,7 +45,7 @@ uint16_t g_task_event_type = NO_EVENT;
 void periodic_wakeup(TimerHandle_t unused)
 {
 	// Switch on blue LED to show we are awake
-	digitalWrite(LED_BUILTIN, HIGH);
+	ctx.gpio_set_level(LED_BUILTIN, HIGH);
 	g_task_event_type |= STATUS;
 	xSemaphoreGiveFromISR(g_task_sem, pdFALSE);
 }
@@ -62,16 +62,16 @@ void setup()
 	xSemaphoreGive(g_task_sem);
 
 	// Initialize the built in LED
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 	// Initialize the connection status LED
-	pinMode(LED_CONN, OUTPUT);
-	digitalWrite(LED_CONN, HIGH);
+	ctx.gpio_mode(LED_CONN, OUTPUT);
+	ctx.gpio_set_level(LED_CONN, HIGH);
 
 #if MY_DEBUG > 0
 	// Initialize Serial for debug output
-	Serial.begin(115200);
+	//Serial.begin(115200);
 
 	time_t serial_timeout = millis();
 	// On nRF52840 the USB serial is not available immediately
@@ -79,8 +79,8 @@ void setup()
 	{
 		if ((millis() - serial_timeout) < 5000)
 		{
-			delay(100);
-			digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+			ctx.delay_ms(100);
+			ctx.gpio_set_level(LED_BUILTIN, !ctx.gpio_read(LED_BUILTIN));
 		}
 		else
 		{
@@ -89,7 +89,7 @@ void setup()
 	}
 #endif
 
-	digitalWrite(LED_BUILTIN, HIGH);
+	ctx.gpio_set_level(LED_BUILTIN, HIGH);
 
 	MYLOG("APP", "=====================================");
 	MYLOG("APP", "RAK4631 LoRa BLE Config Test");
@@ -116,8 +116,8 @@ void setup()
 			while (1)
 			{
 				MYLOG("APP", "Nothing I can do, just loving you");
-				digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-				delay(5000);
+				ctx.gpio_set_level(LED_BUILTIN, !ctx.gpio_read(LED_BUILTIN));
+				ctx.delay_ms(5000);
 			}
 		}
 		MYLOG("APP", "LoRa init success");
@@ -125,7 +125,7 @@ void setup()
 	else
 	{
 		MYLOG("APP", "Auto join is disabled, waiting for connect command");
-		delay(100);
+		ctx.delay_ms(100);
 	}
 
 	// Take the semaphore so the loop will go to sleep until an event happens
@@ -142,19 +142,19 @@ void loop()
 	if (xSemaphoreTake(g_task_sem, portMAX_DELAY) == pdTRUE)
 	{
 		// Switch on green LED to show we are awake
-		digitalWrite(LED_BUILTIN, HIGH);
+		ctx.gpio_set_level(LED_BUILTIN, HIGH);
 		while (g_task_event_type != NO_EVENT)
 		{
 			if ((g_task_event_type & STATUS) == STATUS)
 			{
 				g_task_event_type &= N_STATUS;
 				MYLOG("APP", "Timer wakeup");
-				delay(100); // Just to enable the serial port to send the message
+				ctx.delay_ms(100); // Just to enable the serial port to send the message
 
 				if (g_lorawan_settings.send_repeat_time == 0)
 				{
 					MYLOG("APP", "Repeat send is disabled");
-					delay(100); // Just to enable the serial port to send the message
+					ctx.delay_ms(100); // Just to enable the serial port to send the message
 				}
 				else
 				{
@@ -187,7 +187,7 @@ void loop()
 				{
 					g_task_event_type &= N_BLE_CONFIG;
 					MYLOG("APP", "Config received over BLE");
-					delay(100);
+					ctx.delay_ms(100);
 
 					// Inform connected device about new settings
 					lora_data.write((void *)&g_lorawan_settings, sizeof(s_lorawan_settings));
@@ -218,13 +218,13 @@ void loop()
 						ble_uart.printf("Erasing Flash content");
 						flash_reset();
 						ble_uart.printf("Reset device");
-						delay(5000);
+						ctx.delay_ms(5000);
 						sd_nvic_SystemReset();
 					}
 					if (uart_rx_buff[0] == 'R')
 					{
 						ble_uart.printf("Reset device");
-						delay(5000);
+						ctx.delay_ms(5000);
 						sd_nvic_SystemReset();
 					}
 				}
@@ -262,8 +262,8 @@ void loop()
 			// Go back to sleep
 			xSemaphoreTake(g_task_sem, 10);
 			// Switch off blue LED to show we go to sleep
-			digitalWrite(LED_BUILTIN, LOW);
-			delay(10);
+			ctx.gpio_set_level(LED_BUILTIN, LOW);
+			ctx.delay_ms(10);
 		}
 	}
 }

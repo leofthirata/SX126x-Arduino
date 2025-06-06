@@ -697,7 +697,7 @@ Example to limit the frequency hopping to sub band #1
 /// \todo This is for Dragino LPS8 gateway. How about other gateways???
 if (!lmh_setSubBandChannels(1))
 {
-	Serial.println("lmh_setSubBandChannels failed. Wrong sub band requested?");
+	//Serial.println("lmh_setSubBandChannels failed. Wrong sub band requested?");
 }
 ```
 ----

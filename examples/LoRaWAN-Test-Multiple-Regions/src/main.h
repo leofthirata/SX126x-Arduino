@@ -29,7 +29,7 @@
 #define MYLOG(...)
 #endif
 
-#include <Arduino.h>
+#include "porting.hpp"
 #include <nrf_nvic.h>
 
 // Main loop stuff

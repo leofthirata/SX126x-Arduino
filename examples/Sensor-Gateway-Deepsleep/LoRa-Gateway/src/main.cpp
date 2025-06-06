@@ -1,6 +1,6 @@
-#include <Arduino.h>
+#include "porting.hpp"
 #include <WiFi.h>
-#include <SPI.h>
+//#include <SPI.h>
 #include <Ticker.h>
 #include <rom/rtc.h>
 #include <driver/rtc_io.h>
@@ -104,7 +104,7 @@ void setup()
 {
 #if BATT_SAVE_ON == 0
 	// Start serial communication
-	Serial.begin(115200);
+	//Serial.begin(115200);
 #endif
 
 	// Check the reasons the CPU's are started. We need this later to decide if a full initialization
@@ -113,8 +113,8 @@ void setup()
 	RESET_REASON cpu1WakeupReason = rtc_get_reset_reason(1);
 
 	// Show we are awake
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, HIGH);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, HIGH);
 
 	/** LoRa HW configuration */
 	hw_config hwConfig;
@@ -142,7 +142,7 @@ void setup()
 	{
 		// Wake up reason was a DEEPSLEEP_RESET, which means we were woke up by the SX126x
 #if BATT_SAVE_ON == 0
-		Serial.println("Starting lora_hardware_re_init");
+		//Serial.println("Starting lora_hardware_re_init");
 #endif
 		lora_hardware_re_init(hwConfig);
 	}
@@ -150,7 +150,7 @@ void setup()
 	{
 		// Other wake up reasons mean we need to do a complete initialization of the SX126x
 #if BATT_SAVE_ON == 0
-		Serial.println("Starting lora_hardware_init");
+		//Serial.println("Starting lora_hardware_init");
 #endif
 		lora_hardware_init(hwConfig);
 	}
@@ -165,7 +165,7 @@ void setup()
 	{
 		// Wake up reason was a DEEPSLEEP_RESET, just re-initialize the callbacks
 #if BATT_SAVE_ON == 0
-		Serial.println("Trying to handle SX1262 event after deep sleep wakeup");
+		//Serial.println("Trying to handle SX1262 event after deep sleep wakeup");
 #endif
 		// Re-initialize the Radio
 		Radio.ReInit(&RadioEvents);
@@ -179,7 +179,7 @@ void setup()
 	else
 	{
 #if BATT_SAVE_ON == 0
-		Serial.println("Power on reset, reinitialize the Radio");
+		//Serial.println("Power on reset, reinitialize the Radio");
 #endif
 		// Other wake up reasons mean we need to do a complete initialization of the SX126x
 		// Initialize the Radio
@@ -229,7 +229,7 @@ void goToSleep(void)
 
 	// Go back to bed
 #if BATT_SAVE_ON == 0
-	Serial.println("Start sleeping");
+	//Serial.println("Start sleeping");
 #endif
 	// Make sure the DIO1, RESET and NSS GPIOs are hold on required levels during deep sleep
 	rtc_gpio_set_direction((gpio_num_t)PIN_LORA_DIO_1, RTC_GPIO_MODE_INPUT_ONLY);
@@ -249,14 +249,14 @@ void goToSleep(void)
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
 #if BATT_SAVE_ON == 0
-	Serial.println("Receive finished");
+	//Serial.println("Receive finished");
 
 	char debugOutput[1024];
 	for (int idx = 0; idx < size; idx++)
 	{
 		sprintf(&debugOutput[(idx * 2)], "%02X", payload[idx]);
 	}
-	Serial.printf("Data: %s\n", debugOutput);
+	//Serial.println("Data: %s\n", debugOutput);
 #endif
 
 	// Save received message in a buffer
@@ -268,7 +268,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 	if ((memcmp((void *)dataMsg.startMark, startMark, 4) != 0) || (memcmp((void *)dataMsg.endMark, endMark, 4) != 0))
 	{
 #if BATT_SAVE_ON == 0
-		Serial.println("Data is not for us");
+		//Serial.println("Data is not for us");
 		goToSleep();
 #endif
 	}
@@ -279,7 +279,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 		if ((millis() - adafruitTimeout) > 60000)
 		{
 #if BATT_SAVE_ON == 0
-			Serial.println("Timeout connecting WiFi");
+			//Serial.println("Timeout connecting WiFi");
 #endif
 			goToSleep();
 		}
@@ -293,7 +293,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 		if ((millis() - adafruitTimeout) > 60000)
 		{
 #if BATT_SAVE_ON == 0
-			Serial.println("Timeout connecting to Adafruit IO");
+			//Serial.println("Timeout connecting to Adafruit IO");
 #endif
 			goToSleep();
 		}
@@ -309,7 +309,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 			dataMsg.nodeId);
 	sprintf(devValue, "%.2f", ((float)dataMsg.tempFrac / 100.0) + (float)dataMsg.tempInt);
 #if BATT_SAVE_ON == 0
-	Serial.printf("Publishing topic %s with value %s\n", devTopic, devValue);
+	//Serial.println("Publishing topic %s with value %s\n", devTopic, devValue);
 #endif
 	mqtt.publish(devTopic, devValue);
 	
@@ -319,7 +319,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 			dataMsg.nodeId);
 	sprintf(devValue, "%.2f", ((float)dataMsg.humidFrac / 100.0) + (float)dataMsg.humidInt);
 #if BATT_SAVE_ON == 0
-	Serial.printf("Publishing topic %s with value %s\n", devTopic, devValue);
+	//Serial.println("Publishing topic %s with value %s\n", devTopic, devValue);
 #endif
 	mqtt.publish(devTopic, devValue);
 
@@ -336,7 +336,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 void OnRxTimeout(void)
 {
 #if BATT_SAVE_ON == 0
-	Serial.println("Receive timeout");
+	//Serial.println("Receive timeout");
 #endif
 	// LoRa RX failed, go back to bed
 	goToSleep();
@@ -347,7 +347,7 @@ void OnRxTimeout(void)
 void OnRxError(void)
 {
 #if BATT_SAVE_ON == 0
-	Serial.println("Receive error");
+	//Serial.println("Receive error");
 #endif
 	// LoRa RX failed, go back to bed
 	goToSleep();

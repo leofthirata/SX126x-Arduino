@@ -15,7 +15,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #ifndef __UTILITIES_H__
 #define __UTILITIES_H__
 
-#include <Arduino.h>
+#include "porting.hpp"
 
 /*!
  * \brief Returns 2 raised to the power of n

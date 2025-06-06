@@ -100,13 +100,13 @@ void handle_timer_events(void)
 
 		if (event.status == osEventSignal)
 		{
-			// Serial.printf("Signal %02X\n", event.value.signals);
+			// //Serial.println("Signal %02X\n", event.value.signals);
 			uint16_t mask = 0x01;
 			for (int idx = 0; idx < 10; idx++)
 			{
 				if ((event.value.signals & (mask << idx)) == (mask << idx))
 				{
-					// Serial.printf("Callback %d", idx);
+					// //Serial.println("Callback %d", idx);
 					timer[idx].callback();
 				}
 			}
@@ -202,7 +202,7 @@ void TimerConfig(void)
 		timer[idx].in_use = false;
 	}
 
-	// LOG_LIB("TIM", "threads start");
+	// //LOG_LIB("TIM", "threads start");
 	thread_handle_timers.start(handle_timer_events);
 	thread_handle_timers.set_priority(osPriorityAboveNormal);
 }
@@ -228,11 +228,11 @@ void TimerInit(TimerEvent_t *obj, void (*callback)(void))
 			timer[idx].duration = obj->ReloadValue * 1000;
 			obj->timerNum = idx;
 			obj->Callback = callback;
-			LOG_LIB("TIM", "Timer %d assigned", idx);
+			//LOG_LIB("TIM", "Timer %d assigned", idx);
 			return;
 		}
 	}
-	LOG_LIB("TIM", "No more timers available!");
+	//LOG_LIB("TIM", "No more timers available!");
 }
 
 /**
@@ -248,7 +248,7 @@ void TimerStart(TimerEvent_t *obj)
 	// t_attach(idx);
 	timerTickers[idx].attach(cb_callback[idx], (microseconds)timer[idx].duration);
 
-	// LOG_LIB("TIM", "Timer %d started with %d ms", idx, timer[idx].duration);
+	// //LOG_LIB("TIM", "Timer %d started with %d ms", idx, timer[idx].duration);
 }
 
 /**
@@ -263,7 +263,7 @@ void TimerStop(TimerEvent_t *obj)
 
 	timerTickers[idx].detach();
 
-	// LOG_LIB("TIM", "Timer %d stopped", idx);
+	// //LOG_LIB("TIM", "Timer %d stopped", idx);
 }
 
 /**
@@ -279,7 +279,7 @@ void TimerReset(TimerEvent_t *obj)
 	timerTickers[idx].detach();
 	timerTickers[idx].attach(cb_callback[idx], (microseconds)timer[idx].duration);
 
-	// LOG_LIB("TIM", "Timer %d reset with %d ms", idx, timerTimes[idx]);
+	// //LOG_LIB("TIM", "Timer %d reset with %d ms", idx, timerTimes[idx]);
 }
 
 /**
@@ -294,7 +294,7 @@ void TimerSetValue(TimerEvent_t *obj, uint32_t value)
 	int idx = obj->timerNum;
 	timer[idx].duration = value * 1000;
 
-	// LOG_LIB("TIM", "Timer %d setup to %d ms", idx, value);
+	// //LOG_LIB("TIM", "Timer %d setup to %d ms", idx, value);
 }
 
 /**

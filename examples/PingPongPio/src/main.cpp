@@ -1,7 +1,7 @@
-#include <Arduino.h>
+#include "porting.hpp"
 
 #include <SX126x-Arduino.h>
-#include <SPI.h>
+//#include <SPI.h>
 
 #ifdef _VARIANT_RAK4630_
 // No HW config required
@@ -57,7 +57,7 @@ int PIN_LORA_MOSI = 13;	 // LORA SPI MOSI
 int RADIO_TXEN = -1;	 // LORA ANTENNA TX ENABLE
 int RADIO_RXEN = -1;	 // LORA ANTENNA RX ENABLE
 // Replace PIN_SPI_MISO, PIN_SPI_SCK, PIN_SPI_MOSI with your
-SPIClass SPI_LORA(NRF_SPIM2, PIN_LORA_MISO, PIN_LORA_SCLK, PIN_LORA_MOSI);
+//SPIClass SPI_LORA(NRF_SPIM2, PIN_LORA_MISO, PIN_LORA_SCLK, PIN_LORA_MOSI);
 #endif
 #endif
 
@@ -151,8 +151,8 @@ void setup()
 {
 #ifdef _VARIANT_RAK11200_
 	// RAK11200 uses RAK13300 for LoRa, needs power on
-	pinMode(WB_IO2, OUTPUT);
-	digitalWrite(WB_IO2, HIGH);
+	ctx.gpio_mode(WB_IO2, OUTPUT);
+	ctx.gpio_set_level(WB_IO2, HIGH);
 #endif
 #ifdef _VARIANT_RAK4630_
 // No HW config required
@@ -173,11 +173,11 @@ void setup()
 	hwConfig.USE_DIO3_ANT_SWITCH = false;	  // Only Insight ISP4520 module uses DIO3 as antenna control
 	hwConfig.USE_RXEN_ANT_PWR = true;		  // RXEN is used as power for antenna switch
 #endif
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 	// Initialize Serial for debug output
-	Serial.begin(115200);
+	//Serial.begin(115200);
 
 	time_t serial_timeout = millis();
 	// On nRF52840 the USB serial is not available immediately
@@ -185,8 +185,8 @@ void setup()
 	{
 		if ((millis() - serial_timeout) < 5000)
 		{
-			delay(100);
-			digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
+			ctx.delay_ms(100);
+			ctx.gpio_set_level(LED_GREEN, !ctx.gpio_read(LED_GREEN));
 		}
 		else
 		{
@@ -194,23 +194,23 @@ void setup()
 		}
 	}
 
-	Serial.println("=====================================");
-	Serial.println("SX126x PingPong test");
-	Serial.println("=====================================");
+	//Serial.println("=====================================");
+	//Serial.println("SX126x PingPong test");
+	//Serial.println("=====================================");
 
 #ifdef _VARIANT_RAK4630_
-	Serial.println("RAKwireless RAK4630");
+	//Serial.println("RAKwireless RAK4630");
 #else
 	#ifdef NRF52_SERIES
-		Serial.println("MCU Nordic nRF52832");
-		pinMode(30, OUTPUT);
-		digitalWrite(30, HIGH);
+		//Serial.println("MCU Nordic nRF52832");
+		ctx.gpio_mode(30, OUTPUT);
+		ctx.gpio_set_level(30, HIGH);
 	#endif
 	#ifdef ESP32
 		#ifdef _VARIANT_RAK11200_
-			Serial.println("RAKwireless RAK11200");
+			//Serial.println("RAKwireless RAK11200");
 		#else
-			Serial.println("MCU Espressif ESP32");
+			//Serial.println("MCU Espressif ESP32");
 		#endif
 	#endif
 #endif
@@ -218,7 +218,7 @@ void setup()
 	uint8_t deviceId[8];
 
 	BoardGetUniqueId(deviceId);
-	Serial.printf("BoardId: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
+	//Serial.println("BoardId: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
 				  deviceId[7],
 				  deviceId[6],
 				  deviceId[5],
@@ -229,19 +229,19 @@ void setup()
 				  deviceId[0]);
 
 	// Initialize the LoRa chip
-	Serial.println("Starting lora_hardware_init");
+	//Serial.println("Starting lora_hardware_init");
 	uint32_t init_result = 0;
 
 #if defined(_VARIANT_RAK4630_)
 	init_result = lora_rak4630_init();
-	Serial.printf("RAK4631 LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
+	//Serial.println("RAK4631 LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
 #else
 #if defined(_VARIANT_RAK11200_)
 	init_result = lora_rak13300_init();
-	Serial.printf("RAK13300 LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
+	//Serial.println("RAK13300 LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
 #else
 	init_result = lora_hardware_init(hwConfig);
-	Serial.printf("LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
+	//Serial.println("LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
 #endif
 #endif
 
@@ -283,7 +283,7 @@ void setup()
 	xSemaphoreTake(g_task_sem, 10);
 
 	// Start LoRa
-	Serial.println("Starting Radio.Rx");
+	//Serial.println("Starting Radio.Rx");
 	Radio.Rx(RX_TIMEOUT_VALUE);
 }
 
@@ -292,7 +292,7 @@ void loop()
 	// Wait until semaphore is released (FreeRTOS)
 	xSemaphoreTake(g_task_sem, portMAX_DELAY);
 
-	Serial.println("Loop wakeup");
+	//Serial.println("Loop wakeup");
 
 	// Handle event
 	while (g_task_event_type != NO_EVENT)
@@ -300,43 +300,43 @@ void loop()
 		if ((g_task_event_type & TX_FIN) == TX_FIN)
 		{
 			g_task_event_type &= N_TX_FIN;
-			Serial.println("OnTxDone");
+			//Serial.println("OnTxDone");
 			Radio.Sleep();
 			Radio.Rx(RX_TIMEOUT_VALUE);
 		}
 		if ((g_task_event_type & TX_ERR) == TX_ERR)
 		{
 			g_task_event_type &= N_TX_ERR;
-			Serial.println("OnTxTimeout");
-			digitalWrite(LED_BUILTIN, LOW);
+			//Serial.println("OnTxTimeout");
+			ctx.gpio_set_level(LED_BUILTIN, LOW);
 			Radio.Sleep();
 			Radio.Rx(RX_TIMEOUT_VALUE);
 		}
 		if ((g_task_event_type & RX_FIN) == RX_FIN)
 		{
 			g_task_event_type &= N_RX_FIN;
-			Serial.println("OnRxDone");
-			delay(10);
+			//Serial.println("OnRxDone");
+			ctx.delay_ms(10);
 
-			Serial.printf("RssiValue=%d dBm, SnrValue=%d\n", rx_rssi, rx_snr);
+			//Serial.println("RssiValue=%d dBm, SnrValue=%d\n", rx_rssi, rx_snr);
 
 			for (int idx = 0; idx < rx_size; idx++)
 			{
-				Serial.printf("%02X ", RcvBuffer[idx]);
+				//Serial.println("%02X ", RcvBuffer[idx]);
 			}
-			Serial.println("");
+			//Serial.println("");
 
 			if (isMaster == true)
 			{
-				digitalWrite(LED_BUILTIN, HIGH);
+				ctx.gpio_set_level(LED_BUILTIN, HIGH);
 
 				if (BufferSize > 0)
 				{
 					if (strncmp((const char *)RcvBuffer, (const char *)PongMsg, 4) == 0)
 					{
-						Serial.println("Received a PONG in OnRxDone as Master");
+						//Serial.println("Received a PONG in OnRxDone as Master");
 						// Wait 500ms before sending the next package
-						delay(500);
+						ctx.delay_ms(500);
 
 						// Check if our channel is available for sending
 						Radio.Sleep();
@@ -347,7 +347,7 @@ void loop()
 					}
 					else if (strncmp((const char *)RcvBuffer, (const char *)PingMsg, 4) == 0)
 					{ // A master already exists then become a slave
-						Serial.println("Received a PING in OnRxDone as Master, switch to Slave");
+						//Serial.println("Received a PING in OnRxDone as Master, switch to Slave");
 						isMaster = false;
 						// Check if our channel is available for sending
 						Radio.Sleep();
@@ -369,7 +369,7 @@ void loop()
 				{
 					if (strncmp((const char *)RcvBuffer, (const char *)PingMsg, 4) == 0)
 					{
-						Serial.println("Received a PING in OnRxDone as Slave");
+						//Serial.println("Received a PING in OnRxDone as Slave");
 						// Check if our channel is available for sending
 						Radio.Sleep();
 						Radio.SetCadParams(LORA_CAD_08_SYMBOL, LORA_SPREADING_FACTOR + 13, 10, LORA_CAD_ONLY, 0);
@@ -379,7 +379,7 @@ void loop()
 					}
 					else // valid reception but not a PING as expected
 					{	 // Set device as master and start again
-						Serial.println("Received something in OnRxDone as Slave");
+						//Serial.println("Received something in OnRxDone as Slave");
 						isMaster = true;
 						Radio.Rx(RX_TIMEOUT_VALUE);
 					}
@@ -389,14 +389,14 @@ void loop()
 		if ((g_task_event_type & RX_ERR) == RX_ERR)
 		{
 			g_task_event_type &= N_RX_ERR;
-			Serial.println("OnRxError");
-			digitalWrite(LED_BUILTIN, LOW);
+			//Serial.println("OnRxError");
+			ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 			if (isMaster == true)
 			{
 				// Wait 500ms before sending the next package
-				delay(500);
-				Serial.println("Send as Master after RX timeout");
+				ctx.delay_ms(500);
+				//Serial.println("Send as Master after RX timeout");
 				// Check if our channel is available for sending
 				Radio.Sleep();
 				Radio.SetCadParams(LORA_CAD_08_SYMBOL, LORA_SPREADING_FACTOR + 13, 10, LORA_CAD_ONLY, 0);
@@ -408,7 +408,7 @@ void loop()
 			{
 				// No Ping received within timeout, switch to Master
 				isMaster = true;
-				Serial.println("Switch to Master after RX timeout");
+				//Serial.println("Switch to Master after RX timeout");
 				// Check if our channel is available for sending
 				Radio.Sleep();
 				Radio.SetCadParams(LORA_CAD_08_SYMBOL, LORA_SPREADING_FACTOR + 13, 10, LORA_CAD_ONLY, 0);
@@ -423,16 +423,16 @@ void loop()
 			time_t duration = millis() - cadTime;
 			if (tx_cadResult)
 			{
-				Serial.printf("CAD returned channel busy after %ldms\n", duration);
+				//Serial.println("CAD returned channel busy after %ldms\n", duration);
 				Radio.Rx(RX_TIMEOUT_VALUE);
 			}
 			else
 			{
-				Serial.printf("CAD returned channel free after %ldms\n", duration);
+				//Serial.println("CAD returned channel free after %ldms\n", duration);
 				if (isMaster)
 				{
-					digitalWrite(LED_BUILTIN, HIGH);
-					Serial.println("Sending a PING in OnCadDone as Master");
+					ctx.gpio_set_level(LED_BUILTIN, HIGH);
+					//Serial.println("Sending a PING in OnCadDone as Master");
 					// Send the next PING frame
 					TxdBuffer[0] = 'P';
 					TxdBuffer[1] = 'I';
@@ -441,8 +441,8 @@ void loop()
 				}
 				else
 				{
-					digitalWrite(LED_BUILTIN, LOW);
-					Serial.println("Sending a PONG in OnCadDone as Slave");
+					ctx.gpio_set_level(LED_BUILTIN, LOW);
+					//Serial.println("Sending a PONG in OnCadDone as Slave");
 					// Send the reply to the PONG string
 					TxdBuffer[0] = 'P';
 					TxdBuffer[1] = 'O';
@@ -465,7 +465,7 @@ void loop()
  */
 void OnTxDone(void)
 {
-	Serial.println("OnTxDone CB");
+	//Serial.println("OnTxDone CB");
 	g_task_event_type |= TX_FIN;
 	// Wake up task to send initial packet
 	xSemaphoreGive(g_task_sem);
@@ -475,7 +475,7 @@ void OnTxDone(void)
  */
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-	Serial.println("OnRxDone CB");
+	//Serial.println("OnRxDone CB");
 	rx_payload = payload;
 	rx_size = size;
 	rx_rssi = rssi;
@@ -492,7 +492,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
  */
 void OnTxTimeout(void)
 {
-	Serial.println("OnTxTimeout CB");
+	//Serial.println("OnTxTimeout CB");
 	g_task_event_type |= TX_ERR;
 
 	// Wake up task to send initial packet
@@ -503,7 +503,7 @@ void OnTxTimeout(void)
  */
 void OnRxTimeout(void)
 {
-	Serial.println("OnRxTimeout CB");
+	//Serial.println("OnRxTimeout CB");
 	g_task_event_type |= RX_ERR;
 
 	// Wake up task to send initial packet
@@ -514,7 +514,7 @@ void OnRxTimeout(void)
  */
 void OnRxError(void)
 {
-	Serial.println("OnRxError CB");
+	//Serial.println("OnRxError CB");
 	g_task_event_type |= RX_ERR;
 
 	// Wake up task to send initial packet
@@ -525,7 +525,7 @@ void OnRxError(void)
  */
 void OnCadDone(bool cadResult)
 {
-	Serial.println("OnCadDone CB");
+	//Serial.println("OnCadDone CB");
 	tx_cadResult = cadResult;
 	g_task_event_type |= CAD_FIN;
 

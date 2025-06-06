@@ -18,8 +18,8 @@
  * 
  */
 
-#include <Arduino.h>
-#include <SPI.h>
+#include "porting.hpp"
+//#include <SPI.h>
 #include <Ticker.h>
 #include <rom/rtc.h>
 #include <driver/rtc_io.h>
@@ -109,7 +109,7 @@ void goToSleep(void)
 
 	// Go back to bed
 #ifdef LOG_ON
-	Serial.println("Start sleeping");
+	//Serial.println("Start sleeping");
 #endif
 	// Make sure the DIO1, RESET and NSS GPIOs are hold on required levels during deep sleep
 	rtc_gpio_pulldown_en((gpio_num_t)PIN_LORA_DIO_1);
@@ -128,7 +128,7 @@ void setup()
 {
 #ifdef LOG_ON
 	// Start serial communication
-	Serial.begin(115200);
+	//Serial.begin(115200);
 #endif
 
 	// Check the reasons the CPU's are started. We need this later to decide if a full initialization
@@ -137,16 +137,16 @@ void setup()
 	RESET_REASON cpu1WakeupReason = rtc_get_reset_reason(1);
 
 #ifdef LOG_ON
-	Serial.println("CPU0 reset reason: ");
+	//Serial.println("CPU0 reset reason: ");
 	print_reset_reason(cpu0WakeupReason);
 
-	Serial.println("CPU1 reset reason: ");
+	//Serial.println("CPU1 reset reason: ");
 	print_reset_reason(cpu1WakeupReason);
 #endif
 
 	// Show we are awake
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LED_ON);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, LED_ON);
 
 	// Define the HW configuration between MCU and SX126x
 	hwConfig.CHIP_TYPE = SX1262_CHIP;		  // Example uses an eByte E22 module with an SX1262
@@ -171,7 +171,7 @@ void setup()
 	{
 		// Wake up reason was a DEEPSLEEP_RESET, which means we were woke up by the SX126x
 #ifdef LOG_ON
-		Serial.println("Starting lora_hardware_re_init");
+		//Serial.println("Starting lora_hardware_re_init");
 #endif
 		lora_hardware_re_init(hwConfig);
 	}
@@ -179,7 +179,7 @@ void setup()
 	{
 		// Other wake up reasons mean we need to do a complete initialization of the SX126x
 #ifdef LOG_ON
-		Serial.println("Starting lora_hardware_init");
+		//Serial.println("Starting lora_hardware_init");
 #endif
 		lora_hardware_init(hwConfig);
 	}
@@ -196,7 +196,7 @@ void setup()
 	{
 		// Wake up reason was a DEEPSLEEP_RESET, just re-initialize the callbacks
 #ifdef LOG_ON
-		Serial.println("Trying to handle SX1262 event after deep sleep wakeup");
+		//Serial.println("Trying to handle SX1262 event after deep sleep wakeup");
 #endif
 		// Initialize the Radio
 		Radio.ReInit(&RadioEvents);
@@ -207,7 +207,7 @@ void setup()
 	else
 	{
 #ifdef LOG_ON
-		Serial.println("Power on reset, reinitialize the Radio");
+		//Serial.println("Power on reset, reinitialize the Radio");
 #endif
 		// Other wake up reasons mean we need to do a complete initialization of the SX126x
 		// Initialize the Radio
@@ -245,7 +245,7 @@ void loop()
 void OnTxDone(void)
 {
 #ifdef LOG_ON
-	Serial.println("Transmit finished");
+	//Serial.println("Transmit finished");
 #endif
 	// LoRa TX finished, go back to bed
 	goToSleep();
@@ -256,14 +256,14 @@ void OnTxDone(void)
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
 #ifdef LOG_ON
-	Serial.println("Receive finished");
+	//Serial.println("Receive finished");
 #endif
 	char debugOutput[1024];
 	for (int idx = 0; idx < size; idx++)
 	{
 		sprintf(&debugOutput[(idx * 2)], "%02X", payload[idx]);
 	}
-	Serial.printf("Data: %s\n", debugOutput);
+	//Serial.println("Data: %s\n", debugOutput);
 
 	// Now its up to YOU to do something with the data
 
@@ -276,7 +276,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 void OnTxTimeout(void)
 {
 #ifdef LOG_ON
-	Serial.println("Transmit timeout");
+	//Serial.println("Transmit timeout");
 #endif
 	// LoRa TX failed, go back to bed
 	goToSleep();
@@ -287,7 +287,7 @@ void OnTxTimeout(void)
 void OnRxTimeout(void)
 {
 #ifdef LOG_ON
-	Serial.println("Receive timeout");
+	//Serial.println("Receive timeout");
 #endif
 	// LoRa RX failed, go back to bed
 	goToSleep();
@@ -298,7 +298,7 @@ void OnRxTimeout(void)
 void OnRxError(void)
 {
 #ifdef LOG_ON
-	Serial.println("Receive error");
+	//Serial.println("Receive error");
 #endif
 	// LoRa RX failed, go back to bed
 	goToSleep();
@@ -313,7 +313,7 @@ void OnCadDone(bool cadResult)
 	if (cadResult)
 	{
 #ifdef LOG_ON
-		Serial.printf("CAD returned channel busy %d times\n", cadRepeat);
+		//Serial.println("CAD returned channel busy %d times\n", cadRepeat);
 #endif
 		if (cadRepeat < 6)
 		{
@@ -331,7 +331,7 @@ void OnCadDone(bool cadResult)
 	else
 	{
 #ifdef LOG_ON
-		Serial.printf("CAD returned channel free after %d times\n", cadRepeat);
+		//Serial.println("CAD returned channel free after %d times\n", cadRepeat);
 #endif
 		// If we need to send something, it should be done here
 		// after CAD found the channel available
@@ -348,51 +348,51 @@ void print_reset_reason(RESET_REASON reason)
 	switch (reason)
 	{
 	case 1:
-		Serial.println("POWERON_RESET");
+		//Serial.println("POWERON_RESET");
 		break; /**<1, Vbat power on reset*/
 	case 3:
-		Serial.println("SW_RESET");
+		//Serial.println("SW_RESET");
 		break; /**<3, Software reset digital core*/
 	case 4:
-		Serial.println("OWDT_RESET");
+		//Serial.println("OWDT_RESET");
 		break; /**<4, Legacy watch dog reset digital core*/
 	case 5:
-		Serial.println("DEEPSLEEP_RESET");
+		//Serial.println("DEEPSLEEP_RESET");
 		break; /**<5, Deep Sleep reset digital core*/
 	case 6:
-		Serial.println("SDIO_RESET");
+		//Serial.println("SDIO_RESET");
 		break; /**<6, Reset by SLC module, reset digital core*/
 	case 7:
-		Serial.println("TG0WDT_SYS_RESET");
+		//Serial.println("TG0WDT_SYS_RESET");
 		break; /**<7, Timer Group0 Watch dog reset digital core*/
 	case 8:
-		Serial.println("TG1WDT_SYS_RESET");
+		//Serial.println("TG1WDT_SYS_RESET");
 		break; /**<8, Timer Group1 Watch dog reset digital core*/
 	case 9:
-		Serial.println("RTCWDT_SYS_RESET");
+		//Serial.println("RTCWDT_SYS_RESET");
 		break; /**<9, RTC Watch dog Reset digital core*/
 	case 10:
-		Serial.println("INTRUSION_RESET");
+		//Serial.println("INTRUSION_RESET");
 		break; /**<10, Instrusion tested to reset CPU*/
 	case 11:
-		Serial.println("TGWDT_CPU_RESET");
+		//Serial.println("TGWDT_CPU_RESET");
 		break; /**<11, Time Group reset CPU*/
 	case 12:
-		Serial.println("SW_CPU_RESET");
+		//Serial.println("SW_CPU_RESET");
 		break; /**<12, Software reset CPU*/
 	case 13:
-		Serial.println("RTCWDT_CPU_RESET");
+		//Serial.println("RTCWDT_CPU_RESET");
 		break; /**<13, RTC Watch dog Reset CPU*/
 	case 14:
-		Serial.println("EXT_CPU_RESET");
+		//Serial.println("EXT_CPU_RESET");
 		break; /**<14, for APP CPU, reseted by PRO CPU*/
 	case 15:
-		Serial.println("RTCWDT_BROWN_OUT_RESET");
+		//Serial.println("RTCWDT_BROWN_OUT_RESET");
 		break; /**<15, Reset when the vdd voltage is not stable*/
 	case 16:
-		Serial.println("RTCWDT_RTC_RESET");
+		//Serial.println("RTCWDT_RTC_RESET");
 		break; /**<16, RTC Watch dog reset digital core and rtc module*/
 	default:
-		Serial.println("NO_MEAN");
+		//Serial.println("NO_MEAN");
 	}
 }

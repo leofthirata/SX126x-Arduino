@@ -1,7 +1,7 @@
-#include <Arduino.h>
+#include "porting.hpp"
 
 #include <SX126x-Arduino.h>
-#include <SPI.h>
+//#include <SPI.h>
 
 // Function declarations
 void OnTxDone(void);
@@ -76,11 +76,11 @@ bool tx_cadResult;
 
 void setup()
 {
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 	// Initialize Serial for debug output
-	Serial.begin(115200);
+	//Serial.begin(115200);
 
 	time_t serial_timeout = millis();
 	// On nRF52840 the USB serial is not available immediately
@@ -88,8 +88,8 @@ void setup()
 	{
 		if ((millis() - serial_timeout) < 5000)
 		{
-			delay(100);
-			digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
+			ctx.delay_ms(100);
+			ctx.gpio_set_level(LED_GREEN, !ctx.gpio_read(LED_GREEN));
 		}
 		else
 		{
@@ -97,9 +97,9 @@ void setup()
 		}
 	}
 
-	Serial.println("=====================================");
-	Serial.println("SX126x PingPong test");
-	Serial.println("=====================================");
+	//Serial.println("=====================================");
+	//Serial.println("SX126x PingPong test");
+	//Serial.println("=====================================");
 
 	// Start BLE if we compile for nRF52
 	initBLE();
@@ -107,7 +107,7 @@ void setup()
 	uint8_t deviceId[8];
 
 	BoardGetUniqueId(deviceId);
-	Serial.printf("BoardId: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
+	//Serial.println("BoardId: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
 				  deviceId[7],
 				  deviceId[6],
 				  deviceId[5],
@@ -118,11 +118,11 @@ void setup()
 				  deviceId[0]);
 
 	// Initialize the LoRa chip
-	Serial.println("Starting lora_hardware_init");
+	//Serial.println("Starting lora_hardware_init");
 	uint32_t init_result = 0;
 
 	init_result = lora_rak4630_init();
-	Serial.printf("RAK4631 LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
+	//Serial.println("RAK4631 LoRa init %s\r\n", init_result == 0 ? "success" : "failed");
 
 	// Initialize the Radio callbacks
 	RadioEvents.TxDone = OnTxDone;
@@ -162,7 +162,7 @@ void setup()
 	xSemaphoreTake(g_task_sem, 10);
 
 	// Start LoRa
-	Serial.println("Starting Radio.Rx");
+	//Serial.println("Starting Radio.Rx");
 	Radio.Rx(RX_TIMEOUT_VALUE);
 }
 
@@ -170,7 +170,7 @@ void loop()
 {
 	// Wait until semaphore is released (FreeRTOS)
 	xSemaphoreTake(g_task_sem, portMAX_DELAY);
-	Serial.println("Loop wakeup");
+	//Serial.println("Loop wakeup");
 
 	// Handle event
 	while (g_task_event_type != NO_EVENT)
@@ -178,7 +178,7 @@ void loop()
 		if ((g_task_event_type & TX_FIN) == TX_FIN)
 		{
 			g_task_event_type &= N_TX_FIN;
-			Serial.println("OnTxDone");
+			//Serial.println("OnTxDone");
 			if (bleUARTisConnected)
 			{
 				bleuart.print("OnTxDone\n");
@@ -189,38 +189,38 @@ void loop()
 		if ((g_task_event_type & TX_ERR) == TX_ERR)
 		{
 			g_task_event_type &= N_TX_ERR;
-			Serial.println("OnTxTimeout");
+			//Serial.println("OnTxTimeout");
 			if (bleUARTisConnected)
 			{
 				bleuart.print("OnTxTimeout\n");
 			}
-			digitalWrite(LED_BUILTIN, LOW);
+			ctx.gpio_set_level(LED_BUILTIN, LOW);
 			Radio.Sleep();
 			Radio.Rx(RX_TIMEOUT_VALUE);
 		}
 		if ((g_task_event_type & RX_FIN) == RX_FIN)
 		{
 			g_task_event_type &= N_RX_FIN;
-			Serial.println("OnRxDone");
+			//Serial.println("OnRxDone");
 			if (bleUARTisConnected)
 			{
 				bleuart.print("OnRxDone\n");
 			}
-			delay(10);
+			ctx.delay_ms(10);
 
-			Serial.printf("RssiValue=%d dBm, SnrValue=%d\n", rx_rssi, rx_snr);
+			//Serial.println("RssiValue=%d dBm, SnrValue=%d\n", rx_rssi, rx_snr);
 
 			for (int idx = 0; idx < rx_size; idx++)
 			{
-				Serial.printf("%02X ", RcvBuffer[idx]);
+				//Serial.println("%02X ", RcvBuffer[idx]);
 			}
-			Serial.println("");
+			//Serial.println("");
 
 			if (bleUARTisConnected)
 			{
 				bleuart.printf("RssiValue=%d dBm, SnrValue=%d\n", rx_rssi, rx_snr);
 			}
-			digitalWrite(LED_BUILTIN, HIGH);
+			ctx.gpio_set_level(LED_BUILTIN, HIGH);
 
 			if (isMaster == true)
 			{
@@ -228,14 +228,14 @@ void loop()
 				{
 					if (strncmp((const char *)RcvBuffer, (const char *)PongMsg, 4) == 0)
 					{
-						Serial.println("Received a PONG in OnRxDone as Master");
+						//Serial.println("Received a PONG in OnRxDone as Master");
 						if (bleUARTisConnected)
 						{
 							bleuart.print("Received a PONG in OnRxDone as Master\n");
 						}
 
 						// Wait 500ms before sending the next package
-						delay(500);
+						ctx.delay_ms(500);
 
 						// Check if our channel is available for sending
 						Radio.Sleep();
@@ -246,7 +246,7 @@ void loop()
 					}
 					else if (strncmp((const char *)RcvBuffer, (const char *)PingMsg, 4) == 0)
 					{ // A master already exists then become a slave
-						Serial.println("Received a PING in OnRxDone as Master, switch to Slave");
+						//Serial.println("Received a PING in OnRxDone as Master, switch to Slave");
 						if (bleUARTisConnected)
 						{
 							bleuart.print("Received a PING in OnRxDone as Master\n");
@@ -272,7 +272,7 @@ void loop()
 				{
 					if (strncmp((const char *)RcvBuffer, (const char *)PingMsg, 4) == 0)
 					{
-						Serial.println("Received a PING in OnRxDone as Slave");
+						//Serial.println("Received a PING in OnRxDone as Slave");
 						if (bleUARTisConnected)
 						{
 							bleuart.print("Received a PING in OnRxDone as Slave\n");
@@ -287,7 +287,7 @@ void loop()
 					}
 					else // valid reception but not a PING as expected
 					{	 // Set device as master and start again
-						Serial.println("Received something in OnRxDone as Slave");
+						//Serial.println("Received something in OnRxDone as Slave");
 						if (bleUARTisConnected)
 						{
 							bleuart.print("Received something in OnRxDone as Slave\n");
@@ -301,18 +301,18 @@ void loop()
 		if ((g_task_event_type & RX_ERR) == RX_ERR)
 		{
 			g_task_event_type &= N_RX_ERR;
-			Serial.println("OnRxTimeout");
+			//Serial.println("OnRxTimeout");
 			if (bleUARTisConnected)
 			{
 				bleuart.print("OnRxTimeout\n");
 			}
 
-			digitalWrite(LED_BUILTIN, LOW);
+			ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 			if (isMaster == true)
 			{
 				// Wait 500ms before sending the next package
-				delay(500);
+				ctx.delay_ms(500);
 
 				// Check if our channel is available for sending
 				Radio.Sleep();
@@ -339,7 +339,7 @@ void loop()
 			time_t duration = millis() - cadTime;
 			if (tx_cadResult)
 			{
-				Serial.printf("CAD returned channel busy after %ldms\n", duration);
+				//Serial.println("CAD returned channel busy after %ldms\n", duration);
 				if (bleUARTisConnected)
 				{
 					bleuart.printf("CAD returned channel busy after %ldms\n", duration);
@@ -348,14 +348,14 @@ void loop()
 			}
 			else
 			{
-				Serial.printf("CAD returned channel free after %ldms\n", duration);
+				//Serial.println("CAD returned channel free after %ldms\n", duration);
 				if (bleUARTisConnected)
 				{
 					bleuart.printf("CAD returned channel free after %ldms\n", duration);
 				}
 				if (isMaster)
 				{
-					Serial.println("Sending a PING in OnCadDone as Master");
+					//Serial.println("Sending a PING in OnCadDone as Master");
 					if (bleUARTisConnected)
 					{
 						bleuart.print("Sending a PING in OnCadDone as Master\n");
@@ -368,7 +368,7 @@ void loop()
 				}
 				else
 				{
-					Serial.println("Sending a PONG in OnCadDone as Slave");
+					//Serial.println("Sending a PONG in OnCadDone as Slave");
 					if (bleUARTisConnected)
 					{
 						bleuart.print("Sending a PONG in OnCadDone as Slave\n");
@@ -395,7 +395,7 @@ void loop()
  */
 void OnTxDone(void)
 {
-	Serial.println("OnTxDone CB");
+	//Serial.println("OnTxDone CB");
 	g_task_event_type |= TX_FIN;
 	// Wake up task to send initial packet
 	xSemaphoreGive(g_task_sem);
@@ -405,7 +405,7 @@ void OnTxDone(void)
  */
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-	Serial.println("OnRxDone CB");
+	//Serial.println("OnRxDone CB");
 	rx_payload = payload;
 	rx_size = size;
 	rx_rssi = rssi;
@@ -422,7 +422,7 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
  */
 void OnTxTimeout(void)
 {
-	Serial.println("OnTxTimeout CB");
+	//Serial.println("OnTxTimeout CB");
 	g_task_event_type |= TX_ERR;
 	// Wake up task to send initial packet
 	xSemaphoreGive(g_task_sem);
@@ -432,7 +432,7 @@ void OnTxTimeout(void)
  */
 void OnRxTimeout(void)
 {
-	Serial.println("OnRxTimeout CB");
+	//Serial.println("OnRxTimeout CB");
 	g_task_event_type |= RX_ERR;
 	// Wake up task to send initial packet
 	xSemaphoreGive(g_task_sem);
@@ -442,7 +442,7 @@ void OnRxTimeout(void)
  */
 void OnRxError(void)
 {
-	Serial.println("OnRxError CB");
+	//Serial.println("OnRxError CB");
 	g_task_event_type |= RX_ERR;
 	// Wake up task to send initial packet
 	xSemaphoreGive(g_task_sem);
@@ -452,7 +452,7 @@ void OnRxError(void)
  */
 void OnCadDone(bool cadResult)
 {
-	Serial.println("OnCadDone CB");
+	//Serial.println("OnCadDone CB");
 	tx_cadResult = cadResult;
 	g_task_event_type |= CAD_FIN;
 	// Wake up task to send initial packet

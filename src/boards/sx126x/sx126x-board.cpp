@@ -35,13 +35,13 @@ Maintainer: Miguel Luis and Gregory Cristian
  *
  *****************************************************************************/
 
-#include <Arduino.h>
+#include "porting.hpp"
 #include "boards/mcu/board.h"
 #include "boards/mcu/spi_board.h"
 #include "radio/sx126x/sx126x.h"
 #include "sx126x-board.h"
 
-SPISettings spiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0);
+// SPISettings spiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0);
 
 // No need to initialize DIO3 as output everytime, do it once and remember it
 bool dio3IsOutput = false;
@@ -49,30 +49,30 @@ bool dio3IsOutput = false;
 void SX126xIoInit(void)
 {
 
-	initSPI();
+	ctx.spi_init();
 
 	dio3IsOutput = false;
 
-	pinMode(_hwConfig.PIN_LORA_NSS, OUTPUT);
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
-	pinMode(_hwConfig.PIN_LORA_BUSY, INPUT);
-	pinMode(_hwConfig.PIN_LORA_DIO_1, INPUT);
-	pinMode(_hwConfig.PIN_LORA_RESET, OUTPUT);
-	digitalWrite(_hwConfig.PIN_LORA_RESET, HIGH);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_NSS, OUTPUT);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_BUSY, INPUT);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_DIO_1, INPUT);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_RESET, OUTPUT);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_RESET, HIGH);
 
 	// Use RADIO_RXEN as power for the antenna switch
 	if (_hwConfig.USE_RXEN_ANT_PWR)
 	{
 		if (_hwConfig.RADIO_TXEN != -1)
-			pinMode(_hwConfig.RADIO_TXEN, INPUT);
-		pinMode(_hwConfig.RADIO_RXEN, OUTPUT);
-		digitalWrite(_hwConfig.RADIO_RXEN, LOW);
+			ctx.gpio_mode(_hwConfig.RADIO_TXEN, INPUT);
+		ctx.gpio_mode(_hwConfig.RADIO_RXEN, OUTPUT);
+		ctx.gpio_set_level(_hwConfig.RADIO_RXEN, LOW);
 	}
 	// If both RADIO_TXEN and RADIO_RXEN is defined they control the direction of the antenna switch
 	else if ((_hwConfig.RADIO_TXEN != -1) && (_hwConfig.RADIO_RXEN != -1))
 	{
-		pinMode(_hwConfig.RADIO_TXEN, OUTPUT);
-		pinMode(_hwConfig.RADIO_RXEN, OUTPUT);
+		ctx.gpio_mode(_hwConfig.RADIO_TXEN, OUTPUT);
+		ctx.gpio_mode(_hwConfig.RADIO_RXEN, OUTPUT);
 		SX126xRXena();
 	}
 
@@ -82,70 +82,70 @@ void SX126xIoInit(void)
 void SX126xIoReInit(void)
 {
 
-	initSPI();
+	ctx.spi_init();
 
 	dio3IsOutput = false;
 
-	pinMode(_hwConfig.PIN_LORA_NSS, OUTPUT);
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
-	pinMode(_hwConfig.PIN_LORA_BUSY, INPUT);
-	pinMode(_hwConfig.PIN_LORA_DIO_1, INPUT);
-	// pinMode(_hwConfig.PIN_LORA_RESET, OUTPUT);
-	// digitalWrite(_hwConfig.PIN_LORA_RESET, HIGH);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_NSS, OUTPUT);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_BUSY, INPUT);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_DIO_1, INPUT);
+	// ctx.gpio_mode(_hwConfig.PIN_LORA_RESET, OUTPUT);
+	// ctx.gpio_set_level(_hwConfig.PIN_LORA_RESET, HIGH);
 
 	// If only RADIO_RXEN is defined, it is the power control for the antenna switch
 	if (_hwConfig.USE_RXEN_ANT_PWR)
 	{
 		if (_hwConfig.RADIO_TXEN != -1)
-			pinMode(_hwConfig.RADIO_TXEN, INPUT);
-		pinMode(_hwConfig.RADIO_RXEN, OUTPUT);
-		digitalWrite(_hwConfig.RADIO_RXEN, LOW);
+			ctx.gpio_mode(_hwConfig.RADIO_TXEN, INPUT);
+		ctx.gpio_mode(_hwConfig.RADIO_RXEN, OUTPUT);
+		ctx.gpio_set_level(_hwConfig.RADIO_RXEN, LOW);
 	}
 	// If both RADIO_TXEN and RADIO_RXEN is defined they control the direction of the antenna switch
 	else if ((_hwConfig.RADIO_TXEN != -1) && (_hwConfig.RADIO_RXEN != -1))
 	{
-		pinMode(_hwConfig.RADIO_TXEN, OUTPUT);
-		pinMode(_hwConfig.RADIO_RXEN, OUTPUT);
+		ctx.gpio_mode(_hwConfig.RADIO_TXEN, OUTPUT);
+		ctx.gpio_mode(_hwConfig.RADIO_RXEN, OUTPUT);
 		SX126xRXena();
 	}
 }
 
 void SX126xIoIrqInit(DioIrqHandler dioIrq)
 {
-	attachInterrupt(_hwConfig.PIN_LORA_DIO_1, dioIrq, RISING);
+	ctx.attach_irq(_hwConfig.PIN_LORA_DIO_1, dioIrq, RISING);
 }
 
 void SX126xIoDeInit(void)
 {
 	dio3IsOutput = false;
-	detachInterrupt(_hwConfig.PIN_LORA_DIO_1);
-	pinMode(_hwConfig.PIN_LORA_NSS, INPUT);
-	pinMode(_hwConfig.PIN_LORA_BUSY, INPUT);
-	pinMode(_hwConfig.PIN_LORA_DIO_1, INPUT);
-	pinMode(_hwConfig.PIN_LORA_RESET, INPUT);
+	ctx.detach_irq(_hwConfig.PIN_LORA_DIO_1);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_NSS, INPUT);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_BUSY, INPUT);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_DIO_1, INPUT);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_RESET, INPUT);
 }
 
 void SX126xReset(void)
 {
-	pinMode(_hwConfig.PIN_LORA_RESET, OUTPUT);
-	digitalWrite(_hwConfig.PIN_LORA_RESET, LOW);
-	delay(10);
-	digitalWrite(_hwConfig.PIN_LORA_RESET, HIGH);
-	delay(20);
+	ctx.gpio_mode(_hwConfig.PIN_LORA_RESET, OUTPUT);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_RESET, LOW);
+	ctx.delay_ms(10);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_RESET, HIGH);
+	ctx.delay_ms(20);
 	dio3IsOutput = false;
 }
 
 void SX126xWaitOnBusy(void)
 {
 	int timeout = 1000;
-	while (digitalRead(_hwConfig.PIN_LORA_BUSY) == HIGH)
+	while (ctx.gpio_read(_hwConfig.PIN_LORA_BUSY) == HIGH)
 	{
-		delay(1);
+		ctx.delay_ms(1);
 		timeout -= 1;
 		if (timeout < 0)
 		{
 			/// \todo This error should be reported to the main app
-			LOG_LIB("LORA", "[SX126xWaitOnBusy] Timeout waiting for BUSY low");
+			//LOG_LIB("LORA", "[SX126xWaitOnBusy] Timeout waiting for BUSY low");
 			return;
 		}
 	}
@@ -156,13 +156,13 @@ void SX126xWakeup(void)
 	dio3IsOutput = false;
 	BoardDisableIrq();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer(RADIO_GET_STATUS);
-	SPI_LORA.transfer(0x00);
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	
+	ctx.spi_transfer(RADIO_GET_STATUS);
+	ctx.spi_transfer(0x00);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	// Wait for chip to be ready.
 	SX126xWaitOnBusy();
@@ -174,18 +174,18 @@ void SX126xWriteCommand(RadioCommands_t command, uint8_t *buffer, uint16_t size)
 {
 	SX126xCheckDeviceReady();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer((uint8_t)command);
+	
+	ctx.spi_transfer((uint8_t)command);
 
 	for (uint16_t i = 0; i < size; i++)
 	{
-		SPI_LORA.transfer(buffer[i]);
+		ctx.spi_transfer(buffer[i]);
 	}
 
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	if (command != RADIO_SET_SLEEP)
 	{
@@ -197,18 +197,18 @@ void SX126xReadCommand(RadioCommands_t command, uint8_t *buffer, uint16_t size)
 {
 	SX126xCheckDeviceReady();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer((uint8_t)command);
-	SPI_LORA.transfer(0x00);
+	
+	ctx.spi_transfer((uint8_t)command);
+	ctx.spi_transfer(0x00);
 	for (uint16_t i = 0; i < size; i++)
 	{
-		buffer[i] = SPI_LORA.transfer(0x00);
+		buffer[i] = ctx.spi_transfer(0x00);
 	}
 
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	SX126xWaitOnBusy();
 }
@@ -217,20 +217,20 @@ void SX126xWriteRegisters(uint16_t address, uint8_t *buffer, uint16_t size)
 {
 	SX126xCheckDeviceReady();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-	SPI_LORA.transfer((address & 0xFF00) >> 8);
-	SPI_LORA.transfer(address & 0x00FF);
+	
+	ctx.spi_transfer(RADIO_WRITE_REGISTER);
+	ctx.spi_transfer((address & 0xFF00) >> 8);
+	ctx.spi_transfer(address & 0x00FF);
 
 	for (uint16_t i = 0; i < size; i++)
 	{
-		SPI_LORA.transfer(buffer[i]);
+		ctx.spi_transfer(buffer[i]);
 	}
 
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	SX126xWaitOnBusy();
 }
@@ -244,19 +244,19 @@ void SX126xReadRegisters(uint16_t address, uint8_t *buffer, uint16_t size)
 {
 	SX126xCheckDeviceReady();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer(RADIO_READ_REGISTER);
-	SPI_LORA.transfer((address & 0xFF00) >> 8);
-	SPI_LORA.transfer(address & 0x00FF);
-	SPI_LORA.transfer(0x00);
+	
+	ctx.spi_transfer(RADIO_READ_REGISTER);
+	ctx.spi_transfer((address & 0xFF00) >> 8);
+	ctx.spi_transfer(address & 0x00FF);
+	ctx.spi_transfer(0x00);
 	for (uint16_t i = 0; i < size; i++)
 	{
-		buffer[i] = SPI_LORA.transfer(0x00);
+		buffer[i] = ctx.spi_transfer(0x00);
 	}
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	SX126xWaitOnBusy();
 }
@@ -272,17 +272,17 @@ void SX126xWriteBuffer(uint8_t offset, uint8_t *buffer, uint8_t size)
 {
 	SX126xCheckDeviceReady();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer(RADIO_WRITE_BUFFER);
-	SPI_LORA.transfer(offset);
+	
+	ctx.spi_transfer(RADIO_WRITE_BUFFER);
+	ctx.spi_transfer(offset);
 	for (uint16_t i = 0; i < size; i++)
 	{
-		SPI_LORA.transfer(buffer[i]);
+		ctx.spi_transfer(buffer[i]);
 	}
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	SX126xWaitOnBusy();
 }
@@ -291,18 +291,18 @@ void SX126xReadBuffer(uint8_t offset, uint8_t *buffer, uint8_t size)
 {
 	SX126xCheckDeviceReady();
 
-	digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
 
-	SPI_LORA.beginTransaction(spiSettings);
-	SPI_LORA.transfer(RADIO_READ_BUFFER);
-	SPI_LORA.transfer(offset);
-	SPI_LORA.transfer(0x00);
+	
+	ctx.spi_transfer(RADIO_READ_BUFFER);
+	ctx.spi_transfer(offset);
+	ctx.spi_transfer(0x00);
 	for (uint16_t i = 0; i < size; i++)
 	{
-		buffer[i] = SPI_LORA.transfer(0x00);
+		buffer[i] = ctx.spi_transfer(0x00);
 	}
-	SPI_LORA.endTransaction();
-	digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+	//SPI_LORA.endTransaction();
+	ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 	SX126xWaitOnBusy();
 }
@@ -338,107 +338,107 @@ static void SX126xDio3Control(bool state)
 
 		// Read 0x0580
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_READ_REGISTER);
-		SPI_LORA.transfer((0x0580 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0580 & 0x00FF);
-		SPI_LORA.transfer(0x00);
-		reg_0x0580 = SPI_LORA.transfer(0x00);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_READ_REGISTER);
+		ctx.spi_transfer((0x0580 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0580 & 0x00FF);
+		ctx.spi_transfer(0x00);
+		reg_0x0580 = ctx.spi_transfer(0x00);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Read 0x0583
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_READ_REGISTER);
-		SPI_LORA.transfer((0x0583 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0583 & 0x00FF);
-		SPI_LORA.transfer(0x00);
-		reg_0x0583 = SPI_LORA.transfer(0x00);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_READ_REGISTER);
+		ctx.spi_transfer((0x0583 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0583 & 0x00FF);
+		ctx.spi_transfer(0x00);
+		reg_0x0583 = ctx.spi_transfer(0x00);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Read 0x0584
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_READ_REGISTER);
-		SPI_LORA.transfer((0x0584 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0584 & 0x00FF);
-		SPI_LORA.transfer(0x00);
-		reg_0x0584 = SPI_LORA.transfer(0x00);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_READ_REGISTER);
+		ctx.spi_transfer((0x0584 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0584 & 0x00FF);
+		ctx.spi_transfer(0x00);
+		reg_0x0584 = ctx.spi_transfer(0x00);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Read 0x0585
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_READ_REGISTER);
-		SPI_LORA.transfer((0x0585 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0585 & 0x00FF);
-		SPI_LORA.transfer(0x00);
-		reg_0x0585 = SPI_LORA.transfer(0x00);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_READ_REGISTER);
+		ctx.spi_transfer((0x0585 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0585 & 0x00FF);
+		ctx.spi_transfer(0x00);
+		reg_0x0585 = ctx.spi_transfer(0x00);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Write 0x0580
 		// SX126xWriteRegister(0x0580, reg_0x0580 | 0x08);
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0580 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0580 & 0x00FF);
-		SPI_LORA.transfer(reg_0x0580 | 0x08);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0580 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0580 & 0x00FF);
+		ctx.spi_transfer(reg_0x0580 | 0x08);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Write 0x0583
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0583 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0583 & 0x00FF);
-		SPI_LORA.transfer(reg_0x0583 & ~0x08);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0583 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0583 & 0x00FF);
+		ctx.spi_transfer(reg_0x0583 & ~0x08);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Write 0x0584
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0584 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0584 & 0x00FF);
-		SPI_LORA.transfer(reg_0x0584 & ~0x08);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0584 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0584 & 0x00FF);
+		ctx.spi_transfer(reg_0x0584 & ~0x08);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Write 0x0585
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0585 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0585 & 0x00FF);
-		SPI_LORA.transfer(reg_0x0585 & ~0x08);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0585 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0585 & 0x00FF);
+		ctx.spi_transfer(reg_0x0585 & ~0x08);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		// Write 0x0920
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0920 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0920 & 0x00FF);
-		SPI_LORA.transfer(0x06);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0920 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0920 & 0x00FF);
+		ctx.spi_transfer(0x06);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		dio3IsOutput = true;
 	}
@@ -447,49 +447,49 @@ static void SX126xDio3Control(bool state)
 	{
 		// Set DIO3 High
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_READ_REGISTER);
-		SPI_LORA.transfer((0x0920 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0920 & 0x00FF);
-		SPI_LORA.transfer(0x00);
-		reg_0x0920 = SPI_LORA.transfer(0x00);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_READ_REGISTER);
+		ctx.spi_transfer((0x0920 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0920 & 0x00FF);
+		ctx.spi_transfer(0x00);
+		reg_0x0920 = ctx.spi_transfer(0x00);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0920 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0920 & 0x00FF);
-		SPI_LORA.transfer(reg_0x0920 | 0x08);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0920 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0920 & 0x00FF);
+		ctx.spi_transfer(reg_0x0920 | 0x08);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 	}
 	else
 	{
 		// Set DIO3 Low
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_READ_REGISTER);
-		SPI_LORA.transfer((0x0920 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0920 & 0x00FF);
-		SPI_LORA.transfer(0x00);
-		reg_0x0920 = SPI_LORA.transfer(0x00);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_READ_REGISTER);
+		ctx.spi_transfer((0x0920 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0920 & 0x00FF);
+		ctx.spi_transfer(0x00);
+		reg_0x0920 = ctx.spi_transfer(0x00);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 
 		SX126xWaitOnBusy();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, LOW);
-		SPI_LORA.beginTransaction(spiSettings);
-		SPI_LORA.transfer(RADIO_WRITE_REGISTER);
-		SPI_LORA.transfer((0x0920 & 0xFF00) >> 8);
-		SPI_LORA.transfer(0x0920 & 0x00FF);
-		SPI_LORA.transfer(reg_0x0920 & ~0x08);
-		SPI_LORA.endTransaction();
-		digitalWrite(_hwConfig.PIN_LORA_NSS, HIGH);
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, LOW);
+		
+		ctx.spi_transfer(RADIO_WRITE_REGISTER);
+		ctx.spi_transfer((0x0920 & 0xFF00) >> 8);
+		ctx.spi_transfer(0x0920 & 0x00FF);
+		ctx.spi_transfer(reg_0x0920 & ~0x08);
+		//SPI_LORA.endTransaction();
+		ctx.gpio_set_level(_hwConfig.PIN_LORA_NSS, HIGH);
 	}
 }
 
@@ -504,7 +504,7 @@ void SX126xAntSwOn(void)
 	// Use if RADIO_RXEN is used as antenna switch power control
 	if (_hwConfig.USE_RXEN_ANT_PWR)
 	{
-		digitalWrite(_hwConfig.RADIO_RXEN, HIGH);
+		ctx.gpio_set_level(_hwConfig.RADIO_RXEN, HIGH);
 	}
 }
 
@@ -518,7 +518,7 @@ void SX126xAntSwOff(void)
 	// Use if RADIO_RXEN is used as antenna switch power control
 	if (_hwConfig.USE_RXEN_ANT_PWR)
 	{
-		digitalWrite(_hwConfig.RADIO_RXEN, LOW);
+		ctx.gpio_set_level(_hwConfig.RADIO_RXEN, LOW);
 	}
 }
 
@@ -528,13 +528,13 @@ void SX126xRXena(void)
 	{
 		if ((_hwConfig.RADIO_RXEN != -1) && (_hwConfig.RADIO_TXEN != -1))
 		{
-			digitalWrite(_hwConfig.RADIO_RXEN, HIGH);
-			digitalWrite(_hwConfig.RADIO_TXEN, LOW);
+			ctx.gpio_set_level(_hwConfig.RADIO_RXEN, HIGH);
+			ctx.gpio_set_level(_hwConfig.RADIO_TXEN, LOW);
 		}
 	}
 	else
 	{
-		digitalWrite(_hwConfig.RADIO_RXEN, HIGH);
+		ctx.gpio_set_level(_hwConfig.RADIO_RXEN, HIGH);
 	}
 }
 
@@ -544,13 +544,13 @@ void SX126xTXena(void)
 	{
 		if ((_hwConfig.RADIO_RXEN != -1) && (_hwConfig.RADIO_TXEN != -1))
 		{
-			digitalWrite(_hwConfig.RADIO_RXEN, LOW);
-			digitalWrite(_hwConfig.RADIO_TXEN, HIGH);
+			ctx.gpio_set_level(_hwConfig.RADIO_RXEN, LOW);
+			ctx.gpio_set_level(_hwConfig.RADIO_TXEN, HIGH);
 		}
 	}
 	else
 	{
-		digitalWrite(_hwConfig.RADIO_RXEN, HIGH);
+		ctx.gpio_set_level(_hwConfig.RADIO_RXEN, HIGH);
 	}
 }
 

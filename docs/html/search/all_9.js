@@ -67,7 +67,7 @@ var searchData=
   ['init_5ftype_5fapp_5fdefaults_780',['INIT_TYPE_APP_DEFAULTS',['../group___r_e_g_i_o_n.html#gga11ecad794560a3d3961bdf1c9a27d3b2a3d260b94611dd833c5243c16ca26c3f0',1,'Region.h']]],
   ['init_5ftype_5finit_781',['INIT_TYPE_INIT',['../group___r_e_g_i_o_n.html#gga11ecad794560a3d3961bdf1c9a27d3b2a5065ce7a587a2aeff0da16507222c4d7',1,'Region.h']]],
   ['init_5ftype_5frestore_782',['INIT_TYPE_RESTORE',['../group___r_e_g_i_o_n.html#gga11ecad794560a3d3961bdf1c9a27d3b2aed3218cb3c4ebbb74a1b48e4f8ac8599',1,'Region.h']]],
-  ['initspi_783',['initSPI',['../espressif_2spi__board_8h.html#a4d0e7d467a943df2727239a46dd6fc7e',1,'initSPI(void):&#160;spi_board.h'],['../nrf52832_2spi__board_8h.html#a4d0e7d467a943df2727239a46dd6fc7e',1,'initSPI(void):&#160;spi_board.h']]],
+  ['initspi_783',['initSPI',['../espressif_2spi__board_8h.html#a4d0e7d467a943df2727239a46dd6fc7e',1,'ctx.spi_init(void):&#160;spi_board.h'],['../nrf52832_2spi__board_8h.html#a4d0e7d467a943df2727239a46dd6fc7e',1,'ctx.spi_init(void):&#160;spi_board.h']]],
   ['inittype_5ft_784',['InitType_t',['../group___r_e_g_i_o_n.html#gaddc73ae10673ec925724e7870363bda9',1,'Region.h']]],
   ['invertiq_785',['InvertIQ',['../struct_packet_params__t.html#a3b76a1da4fd3d71e2509790cce45533f',1,'PacketParams_t']]],
   ['irq_5fcad_5factivity_5fdetected_786',['IRQ_CAD_ACTIVITY_DETECTED',['../sx126x_8h.html#afa7b9d25c4305b92ca3ae2249dc9e09ba4e40710f2806844c43a8b07cf394e02b',1,'sx126x.h']]],

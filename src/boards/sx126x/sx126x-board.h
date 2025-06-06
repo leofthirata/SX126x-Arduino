@@ -38,7 +38,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #ifndef __SX126x_ARCH_H__
 #define __SX126x_ARCH_H__
 
-#include <Arduino.h>
+#include "porting.hpp"
 #include "sx126x-debug.h"
 
 /**@brief Initializes the radio I/Os pins interface

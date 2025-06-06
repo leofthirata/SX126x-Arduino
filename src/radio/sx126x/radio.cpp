@@ -28,6 +28,10 @@
 #include "boards/sx126x/sx126x-board.h"
 #include "boards/mcu/timer.h"
 #include "loraEvents.h"
+#include "esp_attr.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
 
 loraEvents_t *_events;
 
@@ -685,7 +689,7 @@ bool RadioIsChannelFree(RadioModems_t modem, uint32_t freq, int16_t rssiThresh, 
 
 	RadioRx(0);
 
-	delay(1);
+	ctx.delay_ms(1);
 
 	carrierSenseTime = TimerGetCurrentTime();
 
@@ -1069,7 +1073,7 @@ void RadioSleep(void)
 	params.Fields.WarmStart = 1;
 	SX126xSetSleep(params);
 
-	delay(2);
+	ctx.delay_ms(2);
 }
 
 void RadioStandby(void)
@@ -1085,7 +1089,7 @@ void RadioRx(uint32_t timeout)
 						  IRQ_RADIO_NONE,
 						  IRQ_RADIO_NONE);
 
-	LOG_LIB("RADIO", "RX window timeout = %ld", timeout);
+	//LOG_LIB("RADIO", "RX window timeout = %ld", timeout);
 	// Even Continous mode is selected, put a timeout here
 	if (timeout != 0)
 	{
@@ -1327,35 +1331,17 @@ void RadioEnforceLowDRopt(bool enforce)
 	}
 }
 
-#if defined NRF52_SERIES || defined ESP32 || defined ARDUINO_RAKWIRELESS_RAK11300
 /** Semaphore used by SX126x IRQ handler to wake up LoRaWAN task */
 extern SemaphoreHandle_t _lora_sem;
 static BaseType_t xHigherPriorityTaskWoken = pdTRUE;
-#endif
 
-#if defined(ESP8266)
-void ICACHE_RAM_ATTR RadioOnDioIrq(void)
-#elif defined(ESP32)
 void IRAM_ATTR RadioOnDioIrq(void)
-#else
-void RadioOnDioIrq(void)
-#endif
 {
 	BoardDisableIrq();
 	IrqFired = true;
 	BoardEnableIrq();
-#if defined NRF52_SERIES || defined ESP32 || defined ARDUINO_RAKWIRELESS_RAK11300
 	// Wake up LoRa event handler on nRF52 and ESP32
 	xSemaphoreGiveFromISR(_lora_sem, &xHigherPriorityTaskWoken);
-#elif defined(ARDUINO_ARCH_RP2040)
-	// Wake up LoRa event handler on RP2040
-	if (_lora_task_thread != NULL)
-	{
-		osSignalSet(_lora_task_thread, 0x1);
-	}
-#else
-#pragma error "Board not supported"
-#endif
 }
 
 void RadioBgIrqProcess(void)
@@ -1373,7 +1359,7 @@ void RadioBgIrqProcess(void)
 
 		if ((irqRegs & IRQ_TX_DONE) == IRQ_TX_DONE)
 		{
-			LOG_LIB("RADIO", "IRQ_TX_DONE");
+			//LOG_LIB("RADIO", "IRQ_TX_DONE");
 			tx_timeout_handled = true;
 			TimerStop(&TxTimeoutTimer);
 			//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
@@ -1391,7 +1377,7 @@ void RadioBgIrqProcess(void)
 
 		if ((irqRegs & IRQ_RX_DONE) == IRQ_RX_DONE)
 		{
-			LOG_LIB("RADIO", "IRQ_RX_DONE");
+			//LOG_LIB("RADIO", "IRQ_RX_DONE");
 			uint8_t size;
 
 			rx_timeout_handled = true;
@@ -1414,7 +1400,7 @@ void RadioBgIrqProcess(void)
 
 			if ((irqRegs & IRQ_CRC_ERROR) == IRQ_CRC_ERROR)
 			{
-				LOG_LIB("RADIO", "IRQ_CRC_ERROR");
+				//LOG_LIB("RADIO", "IRQ_CRC_ERROR");
 
 				uint8_t size;
 				// Discard buffer
@@ -1449,7 +1435,7 @@ void RadioBgIrqProcess(void)
 
 		if ((irqRegs & IRQ_CAD_DONE) == IRQ_CAD_DONE)
 		{
-			LOG_LIB("RADIO", "IRQ_CAD_DONE");
+			//LOG_LIB("RADIO", "IRQ_CAD_DONE");
 			//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
 			SX126xSetOperatingMode(MODE_STDBY_RC);
 			if ((RadioEvents != NULL) && (RadioEvents->CadDone != NULL))
@@ -1460,11 +1446,11 @@ void RadioBgIrqProcess(void)
 
 		if ((irqRegs & IRQ_RX_TX_TIMEOUT) == IRQ_RX_TX_TIMEOUT)
 		{
-			// LOG_LIB("RADIO", "RadioIrqProcess => IRQ_RX_TX_TIMEOUT");
+			// //LOG_LIB("RADIO", "RadioIrqProcess => IRQ_RX_TX_TIMEOUT");
 
 			if (SX126xGetOperatingMode() == MODE_TX)
 			{
-				LOG_LIB("RADIO", "IRQ_TX_TIMEOUT");
+				//LOG_LIB("RADIO", "IRQ_TX_TIMEOUT");
 				tx_timeout_handled = true;
 				TimerStop(&TxTimeoutTimer);
 				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
@@ -1479,7 +1465,7 @@ void RadioBgIrqProcess(void)
 			}
 			else if (SX126xGetOperatingMode() == MODE_RX)
 			{
-				LOG_LIB("RADIO", "IRQ_RX_TIMEOUT");
+				//LOG_LIB("RADIO", "IRQ_RX_TIMEOUT");
 				rx_timeout_handled = true;
 				TimerStop(&RxTimeoutTimer);
 				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
@@ -1496,7 +1482,7 @@ void RadioBgIrqProcess(void)
 
 		if ((irqRegs & IRQ_PREAMBLE_DETECTED) == IRQ_PREAMBLE_DETECTED)
 		{
-			LOG_LIB("RADIO", "IRQ_PREAMBLE_DETECTED");
+			//LOG_LIB("RADIO", "IRQ_PREAMBLE_DETECTED");
 			if ((RadioEvents != NULL) && (RadioEvents->PreAmpDetect != NULL))
 			{
 				RadioEvents->PreAmpDetect();
@@ -1515,7 +1501,7 @@ void RadioBgIrqProcess(void)
 
 		if ((irqRegs & IRQ_HEADER_ERROR) == IRQ_HEADER_ERROR)
 		{
-			LOG_LIB("RADIO", "RadioIrqProcess => IRQ_HEADER_ERROR");
+			//LOG_LIB("RADIO", "RadioIrqProcess => IRQ_HEADER_ERROR");
 
 			TimerStop(&RxTimeoutTimer);
 			if (RxContinuous == false)
@@ -1537,7 +1523,7 @@ void RadioBgIrqProcess(void)
 		TimerRxTimeout = false;
 		if (!rx_timeout_handled)
 		{
-			LOG_LIB("RADIO", "TimerRxTimeout");
+			//LOG_LIB("RADIO", "TimerRxTimeout");
 			TimerStop(&RxTimeoutTimer);
 			if(RadioPublicNetwork.Current == true)
 			{
@@ -1553,7 +1539,7 @@ void RadioBgIrqProcess(void)
 		TimerTxTimeout = false;
 		if (!tx_timeout_handled)
 		{
-			LOG_LIB("RADIO", "TimerTxTimeout");
+			//LOG_LIB("RADIO", "TimerTxTimeout");
 			TimerStop(&TxTimeoutTimer);
 			if(RadioPublicNetwork.Current == true)
 			{

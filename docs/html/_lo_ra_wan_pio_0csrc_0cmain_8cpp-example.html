@@ -117,7 +117,7 @@ $(function() {
 <div class="line"><span class="keywordtype">int</span> RADIO_TXEN = -1;     <span class="comment">// LORA ANTENNA TX ENABLE</span></div>
 <div class="line"><span class="keywordtype">int</span> RADIO_RXEN = -1;     <span class="comment">// LORA ANTENNA RX ENABLE</span></div>
 <div class="line"><span class="comment">// Replace PIN_SPI_MISO, PIN_SPI_SCK, PIN_SPI_MOSI with your</span></div>
-<div class="line">SPIClass <a name="a0"></a><a class="code" href="espressif_2spi__board_8h.html#a462f26c66da916bda9184bfce28fe44f">SPI_LORA</a>(NRF_SPIM2, 14, 12, 13);</div>
+<div class="line">//SPIClass <a name="a0"></a><a class="code" href="espressif_2spi__board_8h.html#a462f26c66da916bda9184bfce28fe44f">SPI_LORA</a>(NRF_SPIM2, 14, 12, 13);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Foward declaration</span></div>
@@ -171,8 +171,8 @@ $(function() {
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">void</span> setup()</div>
 <div class="line">{</div>
-<div class="line">    pinMode(LED_BUILTIN, OUTPUT);</div>
-<div class="line">    digitalWrite(LED_BUILTIN, LOW);</div>
+<div class="line">    ctx.gpio_mode(LED_BUILTIN, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, LOW);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Define the HW configuration between MCU and SX126x</span></div>
 <div class="line">    hwConfig.CHIP_TYPE = <a name="a13"></a><a class="code" href="board_8h.html#a60e06fc7e4a4af69e4b657fd4b594016">SX1262_CHIP</a>;         <span class="comment">// Example uses an eByte E22 module with an SX1262</span></div>
@@ -190,15 +190,15 @@ $(function() {
 <div class="line">    hwConfig.USE_DIO3_ANT_SWITCH = <span class="keyword">false</span>;     <span class="comment">// Only Insight ISP4520 module uses DIO3 as antenna control</span></div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Initialize Serial for debug output</span></div>
-<div class="line">    Serial.begin(115200);</div>
+<div class="line">    //Serial.begin(115200);</div>
 <div class="line"> </div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;=====================================&quot;</span>);</div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;SX126x LoRaWan test&quot;</span>);</div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;=====================================&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;=====================================&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;SX126x LoRaWan test&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;=====================================&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#ifdef NRF52_SERIES</span></div>
-<div class="line">    pinMode(30, OUTPUT);</div>
-<div class="line">    digitalWrite(30, HIGH);</div>
+<div class="line">    ctx.gpio_mode(30, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(30, HIGH);</div>
 <div class="line">    <span class="comment">// Start BLE if we compile for nRF52</span></div>
 <div class="line">    initBLE();</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
@@ -207,14 +207,14 @@ $(function() {
 <div class="line">    uint32_t err_code = timers_init();</div>
 <div class="line">    <span class="keywordflow">if</span> (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(<span class="stringliteral">&quot;timers_init failed - %d\n&quot;</span>, err_code);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;timers_init failed - %d\n&quot;</span>, err_code);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Initialize LoRa chip.</span></div>
 <div class="line">    err_code = <a name="a14"></a><a class="code" href="board_8cpp.html#a6bd116b2545a4b1e27155c0d85c1ce62">lora_hardware_init</a>(hwConfig);</div>
 <div class="line">    <span class="keywordflow">if</span> (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(<span class="stringliteral">&quot;lora_hardware_init failed - %d\n&quot;</span>, err_code);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;lora_hardware_init failed - %d\n&quot;</span>, err_code);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Setup the EUIs and Keys</span></div>
@@ -229,7 +229,7 @@ $(function() {
 <div class="line">    err_code = <a name="a21"></a><a class="code" href="_lo_ra_mac_helper_8cpp.html#a2d0e700418c891d3e4a63213ae4b8c17">lmh_init</a>(&amp;lora_callbacks, lora_param_init, <span class="keyword">false</span>);</div>
 <div class="line">    <span class="keywordflow">if</span> (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(<span class="stringliteral">&quot;lmh_init failed - %d\n&quot;</span>, err_code);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;lmh_init failed - %d\n&quot;</span>, err_code);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Use either</span></div>
@@ -245,7 +245,7 @@ $(function() {
 <div class="line">    <span class="comment">// This must be called AFTER lmh_init()</span></div>
 <div class="line"><span class="comment"></span>    <span class="keywordflow">if</span> (!<a name="a22"></a><a class="code" href="_lo_ra_mac_helper_8cpp.html#aca6ca9c35a7afb59e6201444a595a8c6">lmh_setSubBandChannels</a>(1))</div>
 <div class="line">    {</div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;lmh_setSubBandChannels failed. Wrong sub band requested?&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;lmh_setSubBandChannels failed. Wrong sub band requested?&quot;</span>);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Start Join procedure</span></div>
@@ -258,22 +258,22 @@ $(function() {
 <div class="line">    <a name="a24"></a><a class="code" href="radio_8h.html#acf9fe61a72c16fa29a0dc449d23e3820">Radio</a>.<a name="a25"></a><a class="code" href="struct_radio__s.html#a4946853067744205f76116f6d543ab2c">IrqProcess</a>();</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    <span class="comment">// We are on FreeRTOS, give other tasks a chance to run</span></div>
-<div class="line">    <span class="comment">// delay(100);</span></div>
+<div class="line">    <span class="comment">// ctx.delay_ms(100);</span></div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> lorawan_join_failed_handler(<span class="keywordtype">void</span>)</div>
 <div class="line">{</div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;OVER_THE_AIR_ACTIVATION failed!&quot;</span>);</div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Check your EUI&#39;s and Keys&#39;s!&quot;</span>);</div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Check if a Gateway is in range!&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;OVER_THE_AIR_ACTIVATION failed!&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Check your EUI&#39;s and Keys&#39;s!&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Check if a Gateway is in range!&quot;</span>);</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> lorawan_has_joined_handler(<span class="keywordtype">void</span>)</div>
 <div class="line">{</div>
 <div class="line"><span class="preprocessor">#if (OVER_THE_AIR_ACTIVATION != 0)</span></div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Network Joined&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Network Joined&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#else</span></div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;OVER_THE_AIR_ACTIVATION != 0&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;OVER_THE_AIR_ACTIVATION != 0&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    <a name="a26"></a><a class="code" href="_lo_ra_mac_helper_8cpp.html#a1892a6dc20f9e2073aaa3c3a0df6949c">lmh_class_request</a>(<a name="a27"></a><a class="code" href="group___l_o_r_a_m_a_c.html#gga133e92597739340bac439d1b0916dcb6a307ee33f71385819abc142fe4f23c3bb">CLASS_A</a>);</div>
@@ -284,7 +284,7 @@ $(function() {
 <div class="line"> </div>
 <div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> lorawan_rx_handler(<a class="code" href="structlmh__app__data__t.html">lmh_app_data_t</a> *app_data)</div>
 <div class="line">{</div>
-<div class="line">    Serial.printf(<span class="stringliteral">&quot;LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n&quot;</span>,</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n&quot;</span>,</div>
 <div class="line">                  app_data-&gt;<a name="a30"></a><a class="code" href="structlmh__app__data__t.html#a65bb0f6391b8aebf9919590a804c6d49">port</a>, app_data-&gt;<a name="a31"></a><a class="code" href="structlmh__app__data__t.html#a5ffd3f896638bc97eda84ff437850246">buffsize</a>, app_data-&gt;<a name="a32"></a><a class="code" href="structlmh__app__data__t.html#a82ec4da916456a972e67f2f1f6c4979a">rssi</a>, app_data-&gt;<a name="a33"></a><a class="code" href="structlmh__app__data__t.html#ac193316a934397616ad2d0e719608870">snr</a>);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">switch</span> (app_data-&gt;<a class="code" href="structlmh__app__data__t.html#a65bb0f6391b8aebf9919590a804c6d49">port</a>)</div>
@@ -324,7 +324,7 @@ $(function() {
 <div class="line"> </div>
 <div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> lorawan_confirm_class_handler(<a class="code" href="group___l_o_r_a_m_a_c.html#ga29dc2e097802faaf8fbd0e18ff99695f">DeviceClass_t</a> Class)</div>
 <div class="line">{</div>
-<div class="line">    Serial.printf(<span class="stringliteral">&quot;switch to class %c done\n&quot;</span>, <span class="stringliteral">&quot;ABC&quot;</span>[Class]);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;switch to class %c done\n&quot;</span>, <span class="stringliteral">&quot;ABC&quot;</span>[Class]);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Informs the server that switch has occurred ASAP</span></div>
 <div class="line">    m_lora_app_data.<a class="code" href="structlmh__app__data__t.html#a5ffd3f896638bc97eda84ff437850246">buffsize</a> = 0;</div>
@@ -337,7 +337,7 @@ $(function() {
 <div class="line">    <span class="keywordflow">if</span> (<a name="a40"></a><a class="code" href="_lo_ra_mac_helper_8cpp.html#ad9c56052c863076b28adb48c4eff6800">lmh_join_status_get</a>() != <a name="a41"></a><a class="code" href="_lo_ra_mac_helper_8h.html#a9911c11ecab1c979cab4919335e7c7a1a8e2877b1efefb764946c087004ced78e">LMH_SET</a>)</div>
 <div class="line">    {</div>
 <div class="line">        <span class="comment">//Not joined, try again later</span></div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;Did not join network, skip sending frame&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;Did not join network, skip sending frame&quot;</span>);</div>
 <div class="line">        <span class="keywordflow">return</span>;</div>
 <div class="line">    }</div>
 <div class="line"> </div>
@@ -361,14 +361,14 @@ $(function() {
 <div class="line">    <span class="keywordflow">if</span> (error == <a name="a42"></a><a class="code" href="_lo_ra_mac_helper_8h.html#a1a1179b559ca0b19da3a7f60a810aeffa4b1ad61a2ab5a966ca39e013d25128b1">LMH_SUCCESS</a>)</div>
 <div class="line">    {</div>
 <div class="line">    }</div>
-<div class="line">    Serial.printf(<span class="stringliteral">&quot;lmh_send result %d\n&quot;</span>, error);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;lmh_send result %d\n&quot;</span>, error);</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">static</span> <span class="keywordtype">void</span> tx_lora_periodic_handler(<span class="keywordtype">void</span>)</div>
 <div class="line">{</div>
 <div class="line">    <a class="code" href="timer_8h.html#ad56c30124de6deefb3e32bbee2a4ba46">TimerSetValue</a>(&amp;appTimer, LORAWAN_APP_TX_DUTYCYCLE);</div>
 <div class="line">    <a class="code" href="timer_8h.html#acd2c1f05aa1976f3bbedd389c8710a78">TimerStart</a>(&amp;appTimer);</div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Sending frame&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Sending frame&quot;</span>);</div>
 <div class="line">    send_lora_frame();</div>
 <div class="line">}</div>
 <div class="line"> </div>
@@ -383,7 +383,7 @@ $(function() {
 <div class="ttc" id="a_lo_ra_mac_helper_8h_html_a5723aba52c06597467f697df3914929c"><div class="ttname"><a href="_lo_ra_mac_helper_8h.html#a5723aba52c06597467f697df3914929c">LORAWAN_DEFAULT_DATARATE</a></div><div class="ttdeci">#define LORAWAN_DEFAULT_DATARATE</div><div class="ttdef"><b>Definition:</b> LoRaMacHelper.h:39</div></div>
 <div class="ttc" id="aboard_8cpp_html_a9095c4392ffacd8b8e58e085edda7513"><div class="ttname"><a href="board_8cpp.html#a9095c4392ffacd8b8e58e085edda7513">BoardGetRandomSeed</a></div><div class="ttdeci">uint32_t BoardGetRandomSeed(void)</div></div>
 <div class="ttc" id="a_lo_ra_mac_helper_8cpp_html_a4bbd59dc4cf4d3fcdd535ac78274573a"><div class="ttname"><a href="_lo_ra_mac_helper_8cpp.html#a4bbd59dc4cf4d3fcdd535ac78274573a">lmh_send</a></div><div class="ttdeci">lmh_error_status lmh_send(lmh_app_data_t *app_data, lmh_confirm is_tx_confirmed)</div><div class="ttdoc">Send data.</div><div class="ttdef"><b>Definition:</b> LoRaMacHelper.cpp:927</div></div>
-<div class="ttc" id="aespressif_2spi__board_8h_html_a462f26c66da916bda9184bfce28fe44f"><div class="ttname"><a href="espressif_2spi__board_8h.html#a462f26c66da916bda9184bfce28fe44f">SPI_LORA</a></div><div class="ttdeci">SPIClass SPI_LORA</div></div>
+<div class="ttc" id="aespressif_2spi__board_8h_html_a462f26c66da916bda9184bfce28fe44f"><div class="ttname"><a href="espressif_2spi__board_8h.html#a462f26c66da916bda9184bfce28fe44f">SPI_LORA</a></div><div class="ttdeci">//SPIClass SPI_LORA</div></div>
 <div class="ttc" id="a_lo_ra_mac_helper_8cpp_html_ad9c56052c863076b28adb48c4eff6800"><div class="ttname"><a href="_lo_ra_mac_helper_8cpp.html#ad9c56052c863076b28adb48c4eff6800">lmh_join_status_get</a></div><div class="ttdeci">lmh_join_status lmh_join_status_get(void)</div><div class="ttdoc">Check whether the Device is joined to the network.</div><div class="ttdef"><b>Definition:</b> LoRaMacHelper.cpp:909</div></div>
 <div class="ttc" id="astructlmh__app__data__t_html"><div class="ttname"><a href="structlmh__app__data__t.html">lmh_app_data_t</a></div><div class="ttdoc">Application Data structure.</div><div class="ttdef"><b>Definition:</b> LoRaMacHelper.h:75</div></div>
 <div class="ttc" id="a_lo_ra_mac_helper_8cpp_html_a9e5c1664c172cdca92e1978bbb99d4a9"><div class="ttname"><a href="_lo_ra_mac_helper_8cpp.html#a9e5c1664c172cdca92e1978bbb99d4a9">lmh_join</a></div><div class="ttdeci">void lmh_join(void)</div><div class="ttdoc">Join a Lora Network in class A.</div><div class="ttdef"><b>Definition:</b> LoRaMacHelper.cpp:867</div></div>

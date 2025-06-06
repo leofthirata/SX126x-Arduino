@@ -110,7 +110,7 @@ $(function() {
 <div class="line">int RADIO_TXEN = -1;     // LORA ANTENNA TX ENABLE</div>
 <div class="line">int RADIO_RXEN = -1;     // LORA ANTENNA RX ENABLE</div>
 <div class="line">// Replace PIN_SPI_MISO, PIN_SPI_SCK, PIN_SPI_MOSI with your</div>
-<div class="line">SPIClass SPI_LORA(NRF_SPIM2, 14, 12, 13);</div>
+<div class="line">//SPIClass SPI_LORA(NRF_SPIM2, 14, 12, 13);</div>
 <div class="line">#endif</div>
 <div class="line"> </div>
 <div class="line">// Function declarations</div>
@@ -171,8 +171,8 @@ $(function() {
 <div class="line"> </div>
 <div class="line">void setup()</div>
 <div class="line">{</div>
-<div class="line">    pinMode(LED_BUILTIN, OUTPUT);</div>
-<div class="line">    digitalWrite(LED_BUILTIN, LOW);</div>
+<div class="line">    ctx.gpio_mode(LED_BUILTIN, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, LOW);</div>
 <div class="line"> </div>
 <div class="line">    // Define the HW configuration between MCU and SX126x</div>
 <div class="line">    hwConfig.CHIP_TYPE = SX1262_CHIP;         // Example uses an eByte E22 module with an SX1262</div>
@@ -190,30 +190,30 @@ $(function() {
 <div class="line">    hwConfig.USE_DIO3_ANT_SWITCH = false;    // Only Insight ISP4520 module uses DIO3 as antenna control</div>
 <div class="line"> </div>
 <div class="line">    // Initialize Serial for debug output</div>
-<div class="line">    Serial.begin(115200);</div>
+<div class="line">    //Serial.begin(115200);</div>
 <div class="line"> </div>
-<div class="line">    Serial.println(&quot;=====================================&quot;);</div>
-<div class="line">    Serial.println(&quot;SX126x PingPong test&quot;);</div>
-<div class="line">    Serial.println(&quot;=====================================&quot;);</div>
+<div class="line">    //Serial.println(&quot;=====================================&quot;);</div>
+<div class="line">    //Serial.println(&quot;SX126x PingPong test&quot;);</div>
+<div class="line">    //Serial.println(&quot;=====================================&quot;);</div>
 <div class="line"> </div>
 <div class="line">#ifdef NRF52_SERIES</div>
-<div class="line">    Serial.println(&quot;MCU Nordic nRF52832&quot;);</div>
-<div class="line">    pinMode(30, OUTPUT);</div>
-<div class="line">    digitalWrite(30, HIGH);</div>
+<div class="line">    //Serial.println(&quot;MCU Nordic nRF52832&quot;);</div>
+<div class="line">    ctx.gpio_mode(30, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(30, HIGH);</div>
 <div class="line">    // Start BLE if we compile for nRF52</div>
 <div class="line">    initBLE();</div>
 <div class="line">#endif</div>
 <div class="line">#ifdef ESP32</div>
-<div class="line">    Serial.println(&quot;MCU Espressif ESP32&quot;);</div>
+<div class="line">    //Serial.println(&quot;MCU Espressif ESP32&quot;);</div>
 <div class="line">#endif</div>
 <div class="line">#ifdef ESP8266</div>
-<div class="line">    Serial.println(&quot;MCU Espressif ESP8266&quot;);</div>
+<div class="line">    //Serial.println(&quot;MCU Espressif ESP8266&quot;);</div>
 <div class="line">#endif</div>
 <div class="line"> </div>
 <div class="line">    uint8_t deviceId[8];</div>
 <div class="line"> </div>
 <div class="line">    BoardGetUniqueId(deviceId);</div>
-<div class="line">    Serial.printf(&quot;BoardId: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n&quot;,</div>
+<div class="line">    //Serial.println(&quot;BoardId: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n&quot;,</div>
 <div class="line">                  deviceId[7],</div>
 <div class="line">                  deviceId[6],</div>
 <div class="line">                  deviceId[5],</div>
@@ -224,7 +224,7 @@ $(function() {
 <div class="line">                  deviceId[0]);</div>
 <div class="line"> </div>
 <div class="line">    // Initialize the LoRa chip</div>
-<div class="line">    Serial.println(&quot;Starting lora_hardware_init&quot;);</div>
+<div class="line">    //Serial.println(&quot;Starting lora_hardware_init&quot;);</div>
 <div class="line">    lora_hardware_init(hwConfig);</div>
 <div class="line"> </div>
 <div class="line">    // Initialize the Radio callbacks</div>
@@ -254,7 +254,7 @@ $(function() {
 <div class="line">                      0, true, 0, 0, LORA_IQ_INVERSION_ON, true);</div>
 <div class="line"> </div>
 <div class="line">    // Start LoRa</div>
-<div class="line">    Serial.println(&quot;Starting Radio.Rx&quot;);</div>
+<div class="line">    //Serial.println(&quot;Starting Radio.Rx&quot;);</div>
 <div class="line">    Radio.Rx(RX_TIMEOUT_VALUE);</div>
 <div class="line"> </div>
 <div class="line">    timeToSend = millis();</div>
@@ -268,7 +268,7 @@ $(function() {
 <div class="line">#endif</div>
 <div class="line"> </div>
 <div class="line">    // We are on FreeRTOS, give other tasks a chance to run</div>
-<div class="line">    delay(100);</div>
+<div class="line">    ctx.delay_ms(100);</div>
 <div class="line">    yield();</div>
 <div class="line">}</div>
 <div class="line"> </div>
@@ -276,7 +276,7 @@ $(function() {
 <div class="line"> */</div>
 <div class="line">void OnTxDone(void)</div>
 <div class="line">{</div>
-<div class="line">    Serial.println(&quot;OnTxDone&quot;);</div>
+<div class="line">    //Serial.println(&quot;OnTxDone&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">    if (bleUARTisConnected)</div>
 <div class="line">    {</div>
@@ -290,24 +290,24 @@ $(function() {
 <div class="line"> */</div>
 <div class="line">void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)</div>
 <div class="line">{</div>
-<div class="line">    Serial.println(&quot;OnRxDone&quot;);</div>
+<div class="line">    //Serial.println(&quot;OnRxDone&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">    if (bleUARTisConnected)</div>
 <div class="line">    {</div>
 <div class="line">        bleuart.print(&quot;OnRxDone\n&quot;);</div>
 <div class="line">    }</div>
 <div class="line">#endif</div>
-<div class="line">    delay(10);</div>
+<div class="line">    ctx.delay_ms(10);</div>
 <div class="line">    BufferSize = size;</div>
 <div class="line">    memcpy(RcvBuffer, payload, BufferSize);</div>
 <div class="line"> </div>
-<div class="line">    Serial.printf(&quot;RssiValue=%d dBm, SnrValue=%d\n&quot;, rssi, snr);</div>
+<div class="line">    //Serial.println(&quot;RssiValue=%d dBm, SnrValue=%d\n&quot;, rssi, snr);</div>
 <div class="line"> </div>
 <div class="line">    for (int idx = 0; idx &lt; size; idx++)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;%02X &quot;, RcvBuffer[idx]);</div>
+<div class="line">        //Serial.println(&quot;%02X &quot;, RcvBuffer[idx]);</div>
 <div class="line">    }</div>
-<div class="line">    Serial.println(&quot;&quot;);</div>
+<div class="line">    //Serial.println(&quot;&quot;);</div>
 <div class="line"> </div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">    if (bleUARTisConnected)</div>
@@ -315,7 +315,7 @@ $(function() {
 <div class="line">        bleuart.printf(&quot;RssiValue=%d dBm, SnrValue=%d\n&quot;, rssi, snr);</div>
 <div class="line">    }</div>
 <div class="line">#endif</div>
-<div class="line">    digitalWrite(LED_BUILTIN, HIGH);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, HIGH);</div>
 <div class="line"> </div>
 <div class="line">    if (isMaster == true)</div>
 <div class="line">    {</div>
@@ -323,7 +323,7 @@ $(function() {
 <div class="line">        {</div>
 <div class="line">            if (strncmp((const char *)RcvBuffer, (const char *)PongMsg, 4) == 0)</div>
 <div class="line">            {</div>
-<div class="line">                Serial.println(&quot;Received a PONG in OnRxDone as Master&quot;);</div>
+<div class="line">                //Serial.println(&quot;Received a PONG in OnRxDone as Master&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">                if (bleUARTisConnected)</div>
 <div class="line">                {</div>
@@ -332,7 +332,7 @@ $(function() {
 <div class="line">#endif</div>
 <div class="line"> </div>
 <div class="line">                // Wait 500ms before sending the next package</div>
-<div class="line">                delay(500);</div>
+<div class="line">                ctx.delay_ms(500);</div>
 <div class="line"> </div>
 <div class="line">                // Check if our channel is available for sending</div>
 <div class="line">                Radio.Standby();</div>
@@ -343,7 +343,7 @@ $(function() {
 <div class="line">            }</div>
 <div class="line">            else if (strncmp((const char *)RcvBuffer, (const char *)PingMsg, 4) == 0)</div>
 <div class="line">            { // A master already exists then become a slave</div>
-<div class="line">                Serial.println(&quot;Received a PING in OnRxDone as Master&quot;);</div>
+<div class="line">                //Serial.println(&quot;Received a PING in OnRxDone as Master&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">                if (bleUARTisConnected)</div>
 <div class="line">                {</div>
@@ -366,7 +366,7 @@ $(function() {
 <div class="line">        {</div>
 <div class="line">            if (strncmp((const char *)RcvBuffer, (const char *)PingMsg, 4) == 0)</div>
 <div class="line">            {</div>
-<div class="line">                Serial.println(&quot;Received a PING in OnRxDone as Slave&quot;);</div>
+<div class="line">                //Serial.println(&quot;Received a PING in OnRxDone as Slave&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">                if (bleUARTisConnected)</div>
 <div class="line">                {</div>
@@ -383,7 +383,7 @@ $(function() {
 <div class="line">            }</div>
 <div class="line">            else // valid reception but not a PING as expected</div>
 <div class="line">            {   // Set device as master and start again</div>
-<div class="line">                Serial.println(&quot;Received something in OnRxDone as Slave&quot;);</div>
+<div class="line">                //Serial.println(&quot;Received something in OnRxDone as Slave&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">                if (bleUARTisConnected)</div>
 <div class="line">                {</div>
@@ -402,14 +402,14 @@ $(function() {
 <div class="line">void OnTxTimeout(void)</div>
 <div class="line">{</div>
 <div class="line">    // Radio.Sleep();</div>
-<div class="line">    Serial.println(&quot;OnTxTimeout&quot;);</div>
+<div class="line">    //Serial.println(&quot;OnTxTimeout&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">    if (bleUARTisConnected)</div>
 <div class="line">    {</div>
 <div class="line">        bleuart.print(&quot;OnTxTimeout\n&quot;);</div>
 <div class="line">    }</div>
 <div class="line">#endif</div>
-<div class="line">    digitalWrite(LED_BUILTIN, LOW);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, LOW);</div>
 <div class="line"> </div>
 <div class="line">    Radio.Rx(RX_TIMEOUT_VALUE);</div>
 <div class="line">}</div>
@@ -418,7 +418,7 @@ $(function() {
 <div class="line"> */</div>
 <div class="line">void OnRxTimeout(void)</div>
 <div class="line">{</div>
-<div class="line">    Serial.println(&quot;OnRxTimeout&quot;);</div>
+<div class="line">    //Serial.println(&quot;OnRxTimeout&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">    if (bleUARTisConnected)</div>
 <div class="line">    {</div>
@@ -426,12 +426,12 @@ $(function() {
 <div class="line">    }</div>
 <div class="line">#endif</div>
 <div class="line"> </div>
-<div class="line">    digitalWrite(LED_BUILTIN, LOW);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, LOW);</div>
 <div class="line"> </div>
 <div class="line">    if (isMaster == true)</div>
 <div class="line">    {</div>
 <div class="line">        // Wait 500ms before sending the next package</div>
-<div class="line">        delay(500);</div>
+<div class="line">        ctx.delay_ms(500);</div>
 <div class="line"> </div>
 <div class="line">        // Check if our channel is available for sending</div>
 <div class="line">        Radio.Standby();</div>
@@ -457,19 +457,19 @@ $(function() {
 <div class="line"> */</div>
 <div class="line">void OnRxError(void)</div>
 <div class="line">{</div>
-<div class="line">    Serial.println(&quot;OnRxError&quot;);</div>
+<div class="line">    //Serial.println(&quot;OnRxError&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">    if (bleUARTisConnected)</div>
 <div class="line">    {</div>
 <div class="line">        bleuart.print(&quot;OnRxError\n&quot;);</div>
 <div class="line">    }</div>
 <div class="line">#endif</div>
-<div class="line">    digitalWrite(LED_BUILTIN, LOW);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, LOW);</div>
 <div class="line"> </div>
 <div class="line">    if (isMaster == true)</div>
 <div class="line">    {</div>
 <div class="line">        // Wait 500ms before sending the next package</div>
-<div class="line">        delay(500);</div>
+<div class="line">        ctx.delay_ms(500);</div>
 <div class="line"> </div>
 <div class="line">        // Check if our channel is available for sending</div>
 <div class="line">        Radio.Standby();</div>
@@ -491,7 +491,7 @@ $(function() {
 <div class="line">    time_t duration = millis() - cadTime;</div>
 <div class="line">    if (cadResult)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;CAD returned channel busy after %ldms\n&quot;, duration);</div>
+<div class="line">        //Serial.println(&quot;CAD returned channel busy after %ldms\n&quot;, duration);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">        if (bleUARTisConnected)</div>
 <div class="line">        {</div>
@@ -502,7 +502,7 @@ $(function() {
 <div class="line">    }</div>
 <div class="line">    else</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;CAD returned channel free after %ldms\n&quot;, duration);</div>
+<div class="line">        //Serial.println(&quot;CAD returned channel free after %ldms\n&quot;, duration);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">        if (bleUARTisConnected)</div>
 <div class="line">        {</div>
@@ -511,7 +511,7 @@ $(function() {
 <div class="line">#endif</div>
 <div class="line">        if (isMaster)</div>
 <div class="line">        {</div>
-<div class="line">            Serial.println(&quot;Sending a PING in OnCadDone as Master&quot;);</div>
+<div class="line">            //Serial.println(&quot;Sending a PING in OnCadDone as Master&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">            if (bleUARTisConnected)</div>
 <div class="line">            {</div>
@@ -526,7 +526,7 @@ $(function() {
 <div class="line">        }</div>
 <div class="line">        else</div>
 <div class="line">        {</div>
-<div class="line">            Serial.println(&quot;Sending a PONG in OnCadDone as Slave&quot;);</div>
+<div class="line">            //Serial.println(&quot;Sending a PONG in OnCadDone as Slave&quot;);</div>
 <div class="line">#ifdef NRF52_SERIES</div>
 <div class="line">            if (bleUARTisConnected)</div>
 <div class="line">            {</div>

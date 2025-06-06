@@ -25,6 +25,8 @@
 
 #include "mac/LoRaMacTest.h"
 #include "mac/LoRaMac.h"
+
+#include "esp_timer.h"
 extern LoRaMacParams_t LoRaMacParams;
 
 uint16_t ChannelsMask[6];
@@ -103,6 +105,11 @@ static lmh_compliance_test_t m_compliance_test; /**< LoRaWAN compliance tests da
 
 static bool m_adr_enable_init;
 static TimerEvent_t ComplianceTestTxNextPacketTimer;
+
+static unsigned long millis() 
+{
+	return (unsigned long)(esp_timer_get_time() / 1000ULL);
+}
 
 void lmh_setDevEui(uint8_t userDevEui[])
 {
@@ -188,7 +195,7 @@ bool lmh_setSubBandChannels(uint8_t subBand)
 	// Check for valid sub band
 	if ((subBand == 0) || (subBand > maxBand))
 	{
-		LOG_LIB("LMH", "Invalid subband");
+		//LOG_LIB("LMH", "Invalid subband");
 
 		// Invalid sub band requested
 		return false;
@@ -266,7 +273,7 @@ bool lmh_setSubBandChannels(uint8_t subBand)
 		}
 		break;
 	default:
-		LOG_LIB("LMH", "Invalid subband");
+		//LOG_LIB("LMH", "Invalid subband");
 
 		return false;
 	}
@@ -283,7 +290,7 @@ bool lmh_setSubBandChannels(uint8_t subBand)
 		RegionCommonChanMaskCopy(ChannelsMaskRemaining, subBandChannelMask, 1);
 	}
 
-	LOG_LIB("LMH", "Selected subband %d", subBand);
+	//LOG_LIB("LMH", "Selected subband %d", subBand);
 
 	return true;
 }
@@ -384,7 +391,7 @@ static void McpsConfirm(McpsConfirm_t *mcpsConfirm)
 		// Check TxPower
 		// Report unconfirmed TX finished
 		if (!statusOk)
-			LOG_LIB("LMH", "Timeout TX + RX finished");
+			//LOG_LIB("LMH", "Timeout TX + RX finished");
 		if (m_callbacks->lmh_unconf_finished != 0)
 		{
 			m_callbacks->lmh_unconf_finished();
@@ -400,7 +407,7 @@ static void McpsConfirm(McpsConfirm_t *mcpsConfirm)
 
 		// Report confirmed TX finished with result
 		if (!statusOk)
-			LOG_LIB("LMH", "Timeout Conf TX finished %s", mcpsConfirm->AckReceived ? "SUCC" : "FAIL");
+			//LOG_LIB("LMH", "Timeout Conf TX finished %s", mcpsConfirm->AckReceived ? "SUCC" : "FAIL");
 		if (m_callbacks->lmh_conf_result != 0)
 		{
 			m_callbacks->lmh_conf_result(mcpsConfirm->AckReceived);
@@ -731,7 +738,7 @@ lmh_error_status lmh_init(lmh_callback_t *callbacks, lmh_param_t lora_param, boo
 		sprintf(strlog3, "AppKey=%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
 				AppKey[0], AppKey[1], AppKey[2], AppKey[3], AppKey[4], AppKey[5], AppKey[6], AppKey[7],
 				AppKey[8], AppKey[9], AppKey[10], AppKey[11], AppKey[12], AppKey[13], AppKey[14], AppKey[15]);
-		LOG_LIB("LMH", "OTAA \n%s\nDevAdd=%08X\n%s\n%s", strlog1, (unsigned int)DevAddr, strlog2, strlog3);
+		//LOG_LIB("LMH", "OTAA \n%s\nDevAdd=%08X\n%s\n%s", strlog1, (unsigned int)DevAddr, strlog2, strlog3);
 	}
 	else
 	{
@@ -748,7 +755,7 @@ lmh_error_status lmh_init(lmh_callback_t *callbacks, lmh_param_t lora_param, boo
 		sprintf(strlog3, "AppSKey=%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X",
 				AppSKey[0], AppSKey[1], AppSKey[2], AppSKey[3], AppSKey[4], AppSKey[5], AppSKey[6], AppSKey[7],
 				AppSKey[8], AppSKey[9], AppSKey[10], AppSKey[11], AppSKey[12], AppSKey[13], AppSKey[14], AppSKey[15]);
-		LOG_LIB("LMH", "ABP \n%s\nDevAdd=%08X\n%s\n%s", strlog1, (unsigned int)DevAddr, strlog2, strlog3);
+		//LOG_LIB("LMH", "ABP \n%s\nDevAdd=%08X\n%s\n%s", strlog1, (unsigned int)DevAddr, strlog2, strlog3);
 	}
 
 	LoRaMacPrimitives.MacMcpsConfirm = McpsConfirm;
@@ -852,19 +859,19 @@ lmh_error_status lmh_init(lmh_callback_t *callbacks, lmh_param_t lora_param, boo
 	{
 	case LORAMAC_REGION_AS923:
 		lmh_setAS923Version(1);
-		LOG_LIB("LMH", "Using AS923-1");
+		//LOG_LIB("LMH", "Using AS923-1");
 		break;
 	case LORAMAC_REGION_AS923_2:
 		lmh_setAS923Version(2);
-		LOG_LIB("LMH", "Using AS923-2");
+		//LOG_LIB("LMH", "Using AS923-2");
 		break;
 	case LORAMAC_REGION_AS923_3:
 		lmh_setAS923Version(3);
-		LOG_LIB("LMH", "Using AS923-3");
+		//LOG_LIB("LMH", "Using AS923-3");
 		break;
 	case LORAMAC_REGION_AS923_4:
 		lmh_setAS923Version(4);
-		LOG_LIB("LMH", "Using AS923-4");
+		//LOG_LIB("LMH", "Using AS923-4");
 		break;
 	default:
 		break;
@@ -975,7 +982,7 @@ lmh_error_status lmh_send(lmh_app_data_t *app_data, lmh_confirm is_tx_confirmed)
 
 	if (LoRaMacQueryTxPossible(app_data->buffsize, &txInfo) != LORAMAC_STATUS_OK)
 	{
-		LOG_LIB("LMH", "lmh_send -> LoRaMacQueryTxPossible failed");
+		//LOG_LIB("LMH", "lmh_send -> LoRaMacQueryTxPossible failed");
 
 		// Send empty frame in order to flush MAC commands
 		mcpsReq.Type = MCPS_UNCONFIRMED;
@@ -1022,7 +1029,7 @@ lmh_error_status lmh_send(lmh_app_data_t *app_data, lmh_confirm is_tx_confirmed)
 			lmh_mac_is_busy = true;
 			return LMH_SUCCESS;
 		}
-		LOG_LIB("LMH", "lmh_send -> LoRaMacMcpsRequest failed");
+		//LOG_LIB("LMH", "lmh_send -> LoRaMacMcpsRequest failed");
 	}
 
 	return LMH_ERROR;
@@ -1037,15 +1044,15 @@ lmh_error_status lmh_send_blocking(lmh_app_data_t *app_data, lmh_confirm is_tx_c
 		{
 			if ((millis() - time_start) > time_out)
 			{
-				LOG_LIB("LMH", "timeout at %ld", (millis() - time_start));
+				//LOG_LIB("LMH", "timeout at %ld", (millis() - time_start));
 				lmh_mac_is_busy = false;
 				return LMH_ERROR;
 			}
-			delay(250);
+			ctx.delay_ms(250);
 		}
 		return LMH_SUCCESS;
 	}
-	LOG_LIB("LMH", "lmh_send returned LMH_ERROR");
+	//LOG_LIB("LMH", "lmh_send returned LMH_ERROR");
 	return LMH_ERROR;
 }
 

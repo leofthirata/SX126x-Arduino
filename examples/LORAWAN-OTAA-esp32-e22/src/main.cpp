@@ -1,6 +1,6 @@
-#include <Arduino.h>
+#include "porting.hpp"
 #include <LoRaWan-Arduino.h>
-#include <SPI.h>
+//#include <SPI.h>
 
 // LoRaWan setup definitions
 #define SCHED_MAX_EVENT_DATA_SIZE APP_TIMER_SCHED_EVENT_DATA_SIZE // Maximum size of scheduler events
@@ -77,13 +77,13 @@ static lmh_callback_t lora_callbacks = {BoardGetBatteryLevel, BoardGetUniqueId, 
 	
 void ledOff(void)
 {
-	digitalWrite(LED_BUILTIN, LED_OFF);
+	ctx.gpio_set_level(LED_BUILTIN, LED_OFF);
 }
 
 void setup()
 {
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 	// Define the HW configuration between MCU and SX126x
 	hwConfig.CHIP_TYPE = SX1262_CHIP;	// Example uses an eByte E22 module with an SX1262
@@ -102,24 +102,24 @@ void setup()
 
 
 	// Initialize Serial for debug output
-	Serial.begin(115200);
+	//Serial.begin(115200);
 
-	Serial.println("=====================================");
-	Serial.println("SX126x LoRaWan test");
-	Serial.println("=====================================");
+	//Serial.println("=====================================");
+	//Serial.println("SX126x LoRaWan test");
+	//Serial.println("=====================================");
 
 	// Initialize LoRa chip.
 	uint32_t err_code = lora_hardware_init(hwConfig);
 	if (err_code != 0)
 	{
-		Serial.printf("lora_hardware_init failed - %d\n", err_code);
+		//Serial.println("lora_hardware_init failed - %d\n", err_code);
 	}
 
 	// Initialize Scheduler and timer (Must be after lora_hardware_init)
 	err_code = timers_init();
 	if (err_code != 0)
 	{
-		Serial.printf("timers_init failed - %d\n", err_code);
+		//Serial.println("timers_init failed - %d\n", err_code);
 	}
 
 	// Setup the EUIs and Keys
@@ -134,7 +134,7 @@ void setup()
 	err_code = lmh_init(&lora_callbacks, lora_param_init, doOTAA, CLASS_C, LORAMAC_REGION_US915);
 	if (err_code != 0)
 	{
-		Serial.printf("lmh_init failed - %d\n", err_code);
+		//Serial.println("lmh_init failed - %d\n", err_code);
 	}
 
 	// For Helium and US915, you need as well to select subband 2 after you called lmh_init(), 
@@ -153,10 +153,10 @@ void loop()
 
 static void lorawan_join_fail_handler(void)
 {
-	Serial.println("OTAA joined failed");
-	Serial.println("Check LPWAN credentials and if a gateway is in range");
+	//Serial.println("OTAA joined failed");
+	//Serial.println("Check LPWAN credentials and if a gateway is in range");
 	// Restart Join procedure
-	Serial.println("Restart network join request");
+	//Serial.println("Restart network join request");
 }
 
 /**@brief LoRa function for handling HasJoined event.
@@ -164,9 +164,9 @@ static void lorawan_join_fail_handler(void)
 static void lorawan_has_joined_handler(void)
 {
 #if (OVER_THE_AIR_ACTIVATION != 0)
-	Serial.println("Network Joined");
+	//Serial.println("Network Joined");
 #else
-	Serial.println("OVER_THE_AIR_ACTIVATION != 0");
+	//Serial.println("OVER_THE_AIR_ACTIVATION != 0");
 
 #endif
 	lmh_class_request(CLASS_A);
@@ -174,7 +174,7 @@ static void lorawan_has_joined_handler(void)
 	TimerSetValue(&appTimer, LORAWAN_APP_TX_DUTYCYCLE);
 	TimerStart(&appTimer);
 	// app_timer_start(lora_tx_timer_id, APP_TIMER_TICKS(LORAWAN_APP_TX_DUTYCYCLE), NULL);
-	Serial.println("Sending frame");
+	//Serial.println("Sending frame");
 	send_lora_frame();
 }
 
@@ -184,14 +184,14 @@ static void lorawan_has_joined_handler(void)
  */
 static void lorawan_rx_handler(lmh_app_data_t *app_data)
 {
-	Serial.printf("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
+	//Serial.println("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
 				  app_data->port, app_data->buffsize, app_data->rssi, app_data->snr);
 
 	for (int i = 0; i < app_data->buffsize; i++)
 	{
-		Serial.printf("%0X ", app_data->buffer[i]);
+		//Serial.println("%0X ", app_data->buffer[i]);
 	}
-	Serial.println("");
+	//Serial.println("");
 
 	switch (app_data->port)
 	{
@@ -234,7 +234,7 @@ static void lorawan_rx_handler(lmh_app_data_t *app_data)
  */
 static void lorawan_confirm_class_handler(DeviceClass_t Class)
 {
-	Serial.printf("switch to class %c done\n", "ABC"[Class]);
+	//Serial.println("switch to class %c done\n", "ABC"[Class]);
 
 	// Informs the server that switch has occurred ASAP
 	m_lora_app_data.buffsize = 0;
@@ -248,7 +248,7 @@ static void lorawan_confirm_class_handler(DeviceClass_t Class)
  */
 static void lorawan_unconfirm_tx_finished(void)
 {
-	Serial.println("Uncomfirmed TX finished");
+	//Serial.println("Uncomfirmed TX finished");
 }
 
 /**
@@ -257,7 +257,7 @@ static void lorawan_unconfirm_tx_finished(void)
  */
 static void lorawan_confirm_tx_finished(bool result)
 {
-	Serial.printf("Comfirmed TX finished with result %s", result ? "ACK" : "NAK");
+	//Serial.println("Comfirmed TX finished with result %s", result ? "ACK" : "NAK");
 }
 
 /**@brief Function for sending a LoRa package.
@@ -273,7 +273,7 @@ static void send_lora_frame(void)
 	if (lmh_join_status_get() != LMH_SET)
 	{
 		// Not joined, try again later
-		Serial.println("Did not join network, skip sending frame");
+		//Serial.println("Did not join network, skip sending frame");
 		return;
 	}
 
@@ -304,11 +304,11 @@ static void send_lora_frame(void)
 	m_lora_app_data.buffsize = i;
 
 	Serial.print("Data: ");
-	Serial.println((char *)m_lora_app_data.buffer);
+	//Serial.println((char *)m_lora_app_data.buffer);
 	Serial.print("Size: ");
-	Serial.println(m_lora_app_data.buffsize);
+	//Serial.println(m_lora_app_data.buffsize);
 	Serial.print("Port: ");
-	Serial.println(m_lora_app_data.port);
+	//Serial.println(m_lora_app_data.port);
 
 	chipTemp += 1;
 	if (chipTemp >= 999)
@@ -319,8 +319,8 @@ static void send_lora_frame(void)
 	{
 	}
 
-	Serial.printf("lmh_send result %d\n", error);
-	digitalWrite(LED_BUILTIN, LED_ON);
+	//Serial.println("lmh_send result %d\n", error);
+	ctx.gpio_set_level(LED_BUILTIN, LED_ON);
 	ledTicker.once(1, ledOff);
 }
 
@@ -330,7 +330,7 @@ static void tx_lora_periodic_handler(void)
 {
 	TimerSetValue(&appTimer, LORAWAN_APP_TX_DUTYCYCLE);
 	TimerStart(&appTimer);
-	Serial.println("Sending frame");
+	//Serial.println("Sending frame");
 	send_lora_frame();
 }
 

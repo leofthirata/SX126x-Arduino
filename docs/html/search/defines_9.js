@@ -2,7 +2,7 @@ var searchData=
 [
   ['lc_4215',['LC',['../_lo_ra_mac-definitions_8h.html#a12fa17e5c1016e01a9d82c25027deb1b',1,'LoRaMac-definitions.h']]],
   ['lib_5fdebug_4216',['LIB_DEBUG',['../sx126x-debug_8h.html#a77db44a872ff57297a7f770f1193f0f3',1,'sx126x-debug.h']]],
-  ['log_5flib_4217',['LOG_LIB',['../sx126x-debug_8h.html#a83c1d0461433f7e37c2496c98136ece5',1,'sx126x-debug.h']]],
+  ['log_5flib_4217',['//LOG_LIB',['../sx126x-debug_8h.html#a83c1d0461433f7e37c2496c98136ece5',1,'sx126x-debug.h']]],
   ['lora_5fmac_5fcommand_5fmax_5ffopts_5flength_4218',['LORA_MAC_COMMAND_MAX_FOPTS_LENGTH',['../_lo_ra_mac_8cpp.html#ae2ccbfeefb0390b3cafca4da463d245c',1,'LoRaMac.cpp']]],
   ['lora_5fmac_5fcommand_5fmax_5flength_4219',['LORA_MAC_COMMAND_MAX_LENGTH',['../_lo_ra_mac_8cpp.html#a4ac517018d0390785daf8d90bf99df8f',1,'LoRaMac.cpp']]],
   ['lora_5fmac_5fprivate_5fsyncword_4220',['LORA_MAC_PRIVATE_SYNCWORD',['../sx126x_8h.html#a3a91534e6b1d9c4f1a179a495c38d7fe',1,'sx126x.h']]],

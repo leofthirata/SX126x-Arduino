@@ -70,7 +70,7 @@ void TimerInit(TimerEvent_t *obj, void (*callback)(void))
 			return;
 		}
 	}
-	LOG_LIB("TIM", "No more timers available!");
+	//LOG_LIB("TIM", "No more timers available!");
 	/// \todo We run out of tickers, what do we do now???
 }
 

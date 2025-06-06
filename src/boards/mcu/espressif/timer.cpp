@@ -33,15 +33,20 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
  *	OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *****************************************************************************/
-#if defined ESP8266 || defined ESP32
 #include "boards/mcu/timer.h"
 #include "boards/mcu/board.h"
+#include "esp_timer.h"
 
 Ticker timerTickers[10];
 uint32_t timerTimes[10];
 bool timerInUse[10] = {false, false, false, false, false, false, false, false, false, false};
 
 // External functions
+
+static unsigned long millis() 
+{
+	return (unsigned long)(esp_timer_get_time() / 1000ULL);
+}
 
 void TimerConfig(void)
 {
@@ -61,7 +66,7 @@ void TimerInit(TimerEvent_t *obj, void (*callback)(void))
 			return;
 		}
 	}
-	LOG_LIB("TIM", "No more timers available!");
+	//LOG_LIB("TIM", "No more timers available!");
 	/// \todo We run out of tickers, what do we do now???
 }
 
@@ -122,5 +127,3 @@ TimerTime_t TimerGetElapsedTime(TimerTime_t past)
 
 	return diff;
 }
-
-#endif

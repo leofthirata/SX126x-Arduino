@@ -37,7 +37,7 @@ void init_flash(void)
 	if (!file)
 	{
 		MYLOG("FLASH", "File doesn't exist, force format");
-		delay(100);
+		ctx.delay_ms(100);
 		flash_reset();
 		return;
 	}
@@ -49,7 +49,7 @@ void init_flash(void)
 		// Data is not valid, reset to defaults
 		MYLOG("FLASH", "Invalid data set, deleting and restart node");
 		InternalFS.format();
-		delay(1000);
+		ctx.delay_ms(1000);
 		sd_nvic_SystemReset();
 	}
 	log_settings();
@@ -69,7 +69,7 @@ boolean save_settings(void)
 	if (!file)
 	{
 		MYLOG("FLASH", "File doesn't exist, force format");
-		delay(100);
+		ctx.delay_ms(100);
 		flash_reset();
 	}
 	file.read((uint8_t *)&g_flash_content, sizeof(s_lorawan_settings));
@@ -77,7 +77,7 @@ boolean save_settings(void)
 	if (memcmp((void *)&g_flash_content, (void *)&g_lorawan_settings, sizeof(s_lorawan_settings)) != 0)
 	{
 		MYLOG("FLASH", "Flash content changed, writing new data");
-		delay(100);
+		ctx.delay_ms(100);
 
 		InternalFS.remove(settings_name);
 
@@ -178,23 +178,23 @@ void log_settings(void)
 void ble_log_settings(void)
 {
 	ble_uart.printf("Saved settings:\n");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("000 Marks: %02X %02X\n", g_lorawan_settings.valid_mark_1, g_lorawan_settings.valid_mark_2);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("002 Auto join %s\n", g_lorawan_settings.auto_join ? "enabled" : "disabled");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("003 OTAA %s\n", g_lorawan_settings.otaa_enabled ? "enabled" : "disabled");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("004 Dev EUI %02X %02X %02X %02X %02X %02X %02X %02X\n", g_lorawan_settings.node_device_eui[0], g_lorawan_settings.node_device_eui[1],
 					g_lorawan_settings.node_device_eui[2], g_lorawan_settings.node_device_eui[3],
 					g_lorawan_settings.node_device_eui[4], g_lorawan_settings.node_device_eui[5],
 					g_lorawan_settings.node_device_eui[6], g_lorawan_settings.node_device_eui[7]);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("012 App EUI %02X %02X %02X %02X %02X %02X %02X %02X\n", g_lorawan_settings.node_app_eui[0], g_lorawan_settings.node_app_eui[1],
 					g_lorawan_settings.node_app_eui[2], g_lorawan_settings.node_app_eui[3],
 					g_lorawan_settings.node_app_eui[4], g_lorawan_settings.node_app_eui[5],
 					g_lorawan_settings.node_app_eui[6], g_lorawan_settings.node_app_eui[7]);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("020 App Key %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
 					g_lorawan_settings.node_app_key[0], g_lorawan_settings.node_app_key[1],
 					g_lorawan_settings.node_app_key[2], g_lorawan_settings.node_app_key[3],
@@ -204,7 +204,7 @@ void ble_log_settings(void)
 					g_lorawan_settings.node_app_key[10], g_lorawan_settings.node_app_key[11],
 					g_lorawan_settings.node_app_key[12], g_lorawan_settings.node_app_key[13],
 					g_lorawan_settings.node_app_key[14], g_lorawan_settings.node_app_key[15]);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("036 NWS Key %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
 					g_lorawan_settings.node_nws_key[0], g_lorawan_settings.node_nws_key[1],
 					g_lorawan_settings.node_nws_key[2], g_lorawan_settings.node_nws_key[3],
@@ -214,7 +214,7 @@ void ble_log_settings(void)
 					g_lorawan_settings.node_nws_key[10], g_lorawan_settings.node_nws_key[11],
 					g_lorawan_settings.node_nws_key[12], g_lorawan_settings.node_nws_key[13],
 					g_lorawan_settings.node_nws_key[14], g_lorawan_settings.node_nws_key[15]);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("052 Apps Key %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
 					g_lorawan_settings.node_apps_key[0], g_lorawan_settings.node_apps_key[1],
 					g_lorawan_settings.node_apps_key[2], g_lorawan_settings.node_apps_key[3],
@@ -224,30 +224,30 @@ void ble_log_settings(void)
 					g_lorawan_settings.node_apps_key[10], g_lorawan_settings.node_apps_key[11],
 					g_lorawan_settings.node_apps_key[12], g_lorawan_settings.node_apps_key[13],
 					g_lorawan_settings.node_apps_key[14], g_lorawan_settings.node_apps_key[15]);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("068 Dev Addr %08lX\n", g_lorawan_settings.node_dev_addr);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("072 Repeat time %ld\n", g_lorawan_settings.send_repeat_time);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("076 ADR %s\n", g_lorawan_settings.adr_enabled ? "enabled" : "disabled");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("077 %s Network\n", g_lorawan_settings.public_network ? "Public" : "Private");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("078 Dutycycle %s\n", g_lorawan_settings.duty_cycle_enabled ? "enabled" : "disabled");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("079 Join trials %d\n", g_lorawan_settings.join_trials);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("080 TX Power %d\n", g_lorawan_settings.tx_power);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("081 DR %d\n", g_lorawan_settings.data_rate);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("082 Class %d\n", g_lorawan_settings.lora_class);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("083 Subband %d\n", g_lorawan_settings.subband_channels);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("084 Fport %d\n", g_lorawan_settings.app_port);
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("085 %s Message\n", g_lorawan_settings.confirmed_msg_enabled ? "Confirmed" : "Unconfirmed");
-	delay(50);
+	ctx.delay_ms(50);
 	ble_uart.printf("087 Region %d\n", g_lorawan_settings.lora_region);
 }

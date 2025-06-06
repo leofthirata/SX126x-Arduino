@@ -8,8 +8,8 @@
    @copyright Copyright (c) 2020
 
 */
-#include <Arduino.h>
-#include <SPI.h>
+#include "porting.hpp"
+//#include <SPI.h>
 
 #include <LoRaWan-Arduino.h>
 

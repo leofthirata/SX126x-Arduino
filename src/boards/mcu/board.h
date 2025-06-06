@@ -37,7 +37,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
-#include <Arduino.h>
+#include "porting.hpp"
 
 #include <stdbool.h>
 #include <stdlib.h>

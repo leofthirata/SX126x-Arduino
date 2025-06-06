@@ -151,7 +151,7 @@ $(function() {
 <div class="line">{</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
 <div class="line">    <span class="comment">// Start serial communication</span></div>
-<div class="line">    Serial.begin(115200);</div>
+<div class="line">    //Serial.begin(115200);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Check the reasons the CPU&#39;s are started. We need this later to decide if a full initialization</span></div>
@@ -160,8 +160,8 @@ $(function() {
 <div class="line">    RESET_REASON cpu1WakeupReason = rtc_get_reset_reason(1);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Show we are awake</span></div>
-<div class="line">    pinMode(LED_BUILTIN, OUTPUT);</div>
-<div class="line">    digitalWrite(LED_BUILTIN, HIGH);</div>
+<div class="line">    ctx.gpio_mode(LED_BUILTIN, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, HIGH);</div>
 <div class="line"> </div>
 <div class="line">    <a name="_a2"></a><a class="code" href="structhw__config.html">hw_config</a> hwConfig;</div>
 <div class="line"> </div>
@@ -188,7 +188,7 @@ $(function() {
 <div class="line">    {</div>
 <div class="line">        <span class="comment">// Wake up reason was a DEEPSLEEP_RESET, which means we were woke up by the SX126x</span></div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;Starting lora_hardware_re_init&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;Starting lora_hardware_re_init&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">        <a name="a17"></a><a class="code" href="board_8cpp.html#a3c7c06505d8f51022df1bad91408e050">lora_hardware_re_init</a>(hwConfig);</div>
 <div class="line">    }</div>
@@ -196,7 +196,7 @@ $(function() {
 <div class="line">    {</div>
 <div class="line">        <span class="comment">// Other wake up reasons mean we need to do a complete initialization of the SX126x</span></div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;Starting lora_hardware_init&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;Starting lora_hardware_init&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">        <a name="a18"></a><a class="code" href="board_8cpp.html#a6bd116b2545a4b1e27155c0d85c1ce62">lora_hardware_init</a>(hwConfig);</div>
 <div class="line">    }</div>
@@ -211,7 +211,7 @@ $(function() {
 <div class="line">    {</div>
 <div class="line">        <span class="comment">// Wake up reason was a DEEPSLEEP_RESET, just re-initialize the callbacks</span></div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;Trying to handle SX1262 event after deep sleep wakeup&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;Trying to handle SX1262 event after deep sleep wakeup&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">        <span class="comment">// Re-initialize the Radio</span></div>
 <div class="line">        <a name="a22"></a><a class="code" href="radio_8h.html#acf9fe61a72c16fa29a0dc449d23e3820">Radio</a>.<a name="a23"></a><a class="code" href="struct_radio__s.html#a32ace6d05242e47ce81526e4fe79d583">ReInit</a>(&amp;<a class="code" href="_lo_ra_mac_8cpp.html#ab2d43d0043628b27fcec8e64b0e86086">RadioEvents</a>);</div>
@@ -225,7 +225,7 @@ $(function() {
 <div class="line">    <span class="keywordflow">else</span></div>
 <div class="line">    {</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;Power on reset, reinitialize the Radio&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;Power on reset, reinitialize the Radio&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">        <span class="comment">// Other wake up reasons mean we need to do a complete initialization of the SX126x</span></div>
 <div class="line">        <span class="comment">// Initialize the Radio</span></div>
@@ -269,7 +269,7 @@ $(function() {
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Go back to bed</span></div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Start sleeping&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Start sleeping&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    <span class="comment">// Make sure the DIO1, RESET and NSS GPIOs are hold on required levels during deep sleep</span></div>
 <div class="line">    rtc_gpio_set_direction((gpio_num_t)PIN_LORA_DIO_1, RTC_GPIO_MODE_INPUT_ONLY);</div>
@@ -287,14 +287,14 @@ $(function() {
 <div class="line"><span class="keywordtype">void</span> OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)</div>
 <div class="line">{</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Receive finished&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Receive finished&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keywordtype">char</span> debugOutput[1024];</div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> idx = 0; idx &lt; size; idx++)</div>
 <div class="line">    {</div>
 <div class="line">        sprintf(&amp;debugOutput[(idx * 2)], <span class="stringliteral">&quot;%02X&quot;</span>, payload[idx]);</div>
 <div class="line">    }</div>
-<div class="line">    Serial.printf(<span class="stringliteral">&quot;Data: %s\n&quot;</span>, debugOutput);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Data: %s\n&quot;</span>, debugOutput);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Save received message in a buffer</span></div>
@@ -306,7 +306,7 @@ $(function() {
 <div class="line">    <span class="keywordflow">if</span> ((memcmp((<span class="keywordtype">void</span> *)dataMsg.startMark, startMark, 4) != 0) || (memcmp((<span class="keywordtype">void</span> *)dataMsg.endMark, endMark, 4) != 0))</div>
 <div class="line">    {</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">        Serial.println(<span class="stringliteral">&quot;Data is not for us&quot;</span>);</div>
+<div class="line">        //Serial.println(<span class="stringliteral">&quot;Data is not for us&quot;</span>);</div>
 <div class="line">        goToSleep();</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    }</div>
@@ -317,7 +317,7 @@ $(function() {
 <div class="line">        <span class="keywordflow">if</span> ((millis() - adafruitTimeout) &gt; 60000)</div>
 <div class="line">        {</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">            Serial.println(<span class="stringliteral">&quot;Timeout connecting WiFi&quot;</span>);</div>
+<div class="line">            //Serial.println(<span class="stringliteral">&quot;Timeout connecting WiFi&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">            goToSleep();</div>
 <div class="line">        }</div>
@@ -331,7 +331,7 @@ $(function() {
 <div class="line">        <span class="keywordflow">if</span> ((millis() - adafruitTimeout) &gt; 60000)</div>
 <div class="line">        {</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">            Serial.println(<span class="stringliteral">&quot;Timeout connecting to Adafruit IO&quot;</span>);</div>
+<div class="line">            //Serial.println(<span class="stringliteral">&quot;Timeout connecting to Adafruit IO&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">            goToSleep();</div>
 <div class="line">        }</div>
@@ -347,7 +347,7 @@ $(function() {
 <div class="line">            dataMsg.nodeId);</div>
 <div class="line">    sprintf(devValue, <span class="stringliteral">&quot;%.2f&quot;</span>, ((<span class="keywordtype">float</span>)dataMsg.tempFrac / 100.0) + (<span class="keywordtype">float</span>)dataMsg.tempInt);</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">    Serial.printf(<span class="stringliteral">&quot;Publishing topic %s with value %s\n&quot;</span>, devTopic, devValue);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Publishing topic %s with value %s\n&quot;</span>, devTopic, devValue);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    mqtt.publish(devTopic, devValue);</div>
 <div class="line">    </div>
@@ -357,7 +357,7 @@ $(function() {
 <div class="line">            dataMsg.nodeId);</div>
 <div class="line">    sprintf(devValue, <span class="stringliteral">&quot;%.2f&quot;</span>, ((<span class="keywordtype">float</span>)dataMsg.humidFrac / 100.0) + (<span class="keywordtype">float</span>)dataMsg.humidInt);</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">    Serial.printf(<span class="stringliteral">&quot;Publishing topic %s with value %s\n&quot;</span>, devTopic, devValue);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Publishing topic %s with value %s\n&quot;</span>, devTopic, devValue);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    mqtt.publish(devTopic, devValue);</div>
 <div class="line"> </div>
@@ -372,7 +372,7 @@ $(function() {
 <div class="line"><span class="keywordtype">void</span> OnRxTimeout(<span class="keywordtype">void</span>)</div>
 <div class="line">{</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Receive timeout&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Receive timeout&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    <span class="comment">// LoRa RX failed, go back to bed</span></div>
 <div class="line">    goToSleep();</div>
@@ -381,7 +381,7 @@ $(function() {
 <div class="line"><span class="keywordtype">void</span> OnRxError(<span class="keywordtype">void</span>)</div>
 <div class="line">{</div>
 <div class="line"><span class="preprocessor">#if BATT_SAVE_ON == 0</span></div>
-<div class="line">    Serial.println(<span class="stringliteral">&quot;Receive error&quot;</span>);</div>
+<div class="line">    //Serial.println(<span class="stringliteral">&quot;Receive error&quot;</span>);</div>
 <div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line">    <span class="comment">// LoRa RX failed, go back to bed</span></div>
 <div class="line">    goToSleep();</div>

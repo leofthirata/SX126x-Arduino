@@ -1,6 +1,6 @@
-#include <Arduino.h>
+#include "porting.hpp"
 #include <SX126x-Arduino.h>
-#include <SPI.h>
+//#include <SPI.h>
 #include "Adafruit_Si7021.h"
 
 // Set to 1 to stop any output on Serial
@@ -97,15 +97,15 @@ void setup()
 	setCpuFrequencyMhz(80);
 
 	// Show we are awake
-	pinMode(LED_BUILTIN, OUTPUT);
-	digitalWrite(LED_BUILTIN, HIGH);
+	ctx.gpio_mode(LED_BUILTIN, OUTPUT);
+	ctx.gpio_set_level(LED_BUILTIN, HIGH);
 
 	/** HW configuration structure for the LoRa library */
 	hw_config hwConfig;
 
 #if BATT_SAVE_ON == 0
 	// Start Serial
-	Serial.begin(115200);
+	//Serial.begin(115200);
 #endif
 
 	// Create node ID
@@ -119,9 +119,9 @@ void setup()
 	deviceID += (uint32_t)deviceMac[5] << 24;
 
 #if BATT_SAVE_ON == 0
-	Serial.println("++++++++++++++++++++++++++++++++++++++");
-	Serial.printf("Sensor node ID %08X using frequency %.1f MHz\n", deviceID, (double)(RF_FREQUENCY/1000000.0));
-	Serial.println("++++++++++++++++++++++++++++++++++++++");
+	//Serial.println("++++++++++++++++++++++++++++++++++++++");
+	//Serial.println("Sensor node ID %08X using frequency %.1f MHz\n", deviceID, (double)(RF_FREQUENCY/1000000.0));
+	//Serial.println("++++++++++++++++++++++++++++++++++++++");
 #endif
 
 	// Define the HW configuration between MCU and SX126x
@@ -142,7 +142,7 @@ void setup()
 	if (lora_hardware_init(hwConfig) != 0)
 	{
 #if BATT_SAVE_ON == 0
-		Serial.println("Error in hardware init");
+		//Serial.println("Error in hardware init");
 #endif
 	}
 
@@ -174,7 +174,7 @@ void setup()
 	if (!sensor.begin())
 	{
 #if BATT_SAVE_ON == 0
-		Serial.println("Did not find Si7021 sensor!");
+		//Serial.println("Did not find Si7021 sensor!");
 #endif
 		goToSleep();
 	}
@@ -191,7 +191,7 @@ void setup()
 		{
 			// Second reading failed as well, give up
 #if BATT_SAVE_ON == 0
-			Serial.println("Could not read sensor data, skip sending");
+			//Serial.println("Could not read sensor data, skip sending");
 #endif
 			goToSleep();
 		}
@@ -205,23 +205,23 @@ void setup()
 	dataMsg.humidFrac = (uint8_t)((sensHumid - dataMsg.humidInt) * 100);
 
 #if BATT_SAVE_ON == 0
-	Serial.printf("Finished reading sensor after %ldms\n", (millis() - wakeup));
+	//Serial.println("Finished reading sensor after %ldms\n", (millis() - wakeup));
 
 	Serial.print("Temp ");
 	Serial.print(dataMsg.tempInt);
 	Serial.print(".");
-	Serial.println(dataMsg.tempFrac);
+	//Serial.println(dataMsg.tempFrac);
 
 	Serial.print("Humid ");
 	Serial.print(dataMsg.humidInt);
 	Serial.print(".");
-	Serial.println(dataMsg.humidFrac);
+	//Serial.println(dataMsg.humidFrac);
 
-	Serial.println("Data package as HEX values:");
+	//Serial.println("Data package as HEX values:");
 	char *printData = (char *) &dataMsg;
 	for (int idx=0; idx < sizeof(dataMsg); idx++)
 	{
-		Serial.printf("%02X ", printData[idx]);
+		//Serial.println("%02X ", printData[idx]);
 	}
 #endif
 
@@ -247,12 +247,12 @@ void loop()
 	if ((millis() - loraTimeout) > 120000)
 	{
 #if BATT_SAVE_ON == 0
-		Serial.println("LoRa loop timeout");
+		//Serial.println("LoRa loop timeout");
 #endif
 		// LoRa failed, go back to bed
 		goToSleep();
 	}
-	delay(100);
+	ctx.delay_ms(100);
 }
 
 /**
@@ -264,7 +264,7 @@ void goToSleep(void)
 	Radio.Standby();
 	Radio.Sleep();
 #if BATT_SAVE_ON == 0
-	Serial.printf("Sleeping after %ldms\n", (millis() - wakeup));
+	//Serial.println("Sleeping after %ldms\n", (millis() - wakeup));
 #endif 
 
 	// Go back to bed for 
@@ -279,7 +279,7 @@ void goToSleep(void)
 void OnTxDone(void)
 {
 #if BATT_SAVE_ON == 0
-	Serial.println("Transmit finished");
+	//Serial.println("Transmit finished");
 #endif
 	// LoRa failed, go back to bed
 	goToSleep();
@@ -290,7 +290,7 @@ void OnTxDone(void)
 void OnTxTimeout(void)
 {
 #if BATT_SAVE_ON == 0
-	Serial.println("Transmit timeout");
+	//Serial.println("Transmit timeout");
 #endif
 	// LoRa failed, go back to bed
 	goToSleep();
@@ -305,7 +305,7 @@ void OnCadDone(bool cadResult)
 	if (cadResult)
 	{
 #if BATT_SAVE_ON == 0
-		Serial.printf("CAD returned channel busy %d times\n", cadRepeat);
+		//Serial.println("CAD returned channel busy %d times\n", cadRepeat);
 #endif
 		if (cadRepeat < 6)
 		{
@@ -323,7 +323,7 @@ void OnCadDone(bool cadResult)
 	else
 	{
 #if BATT_SAVE_ON == 0
-		Serial.printf("CAD returned channel free after %d times\n", cadRepeat);
+		//Serial.println("CAD returned channel free after %d times\n", cadRepeat);
 #endif
 		// Send data
 		Radio.Send((uint8_t *) &dataMsg, sizeof(dataMsg));

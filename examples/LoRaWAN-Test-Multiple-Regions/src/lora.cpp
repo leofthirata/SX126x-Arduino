@@ -125,7 +125,7 @@ int8_t init_lora(void)
 
 	// Start Join procedure
 	MYLOG("LORA", "Start network join request");
-	delay(200);
+	ctx.delay_ms(200);
 	lmh_join();
 
 	g_lorawan_initialized = true;
@@ -152,7 +152,7 @@ void lpwan_join_fail_handler(void)
  */
 static void lpwan_joined_handler(void)
 {
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 	if (g_lorawan_settings.otaa_enabled)
 	{
@@ -164,7 +164,7 @@ static void lpwan_joined_handler(void)
 		MYLOG("LORA", "ABP joined");
 	}
 
-	delay(100); // Just to enable the serial port to send the message
+	ctx.delay_ms(100); // Just to enable the serial port to send the message
 
 	// Class A is default in the LoRaWAN lib. If app needs different class, request change here
 	if (g_lorawan_settings.lora_class != CLASS_A)
@@ -181,7 +181,7 @@ static void lpwan_joined_handler(void)
 		if (g_task_sem != NULL)
 		{
 			MYLOG("LORA", "Waking up loop task");
-			delay(100); // Just to enable the serial port to send the message
+			ctx.delay_ms(100); // Just to enable the serial port to send the message
 			xSemaphoreGive(g_task_sem);
 		}
 

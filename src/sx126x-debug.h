@@ -18,15 +18,15 @@
 #define LIB_DEBUG 1
 #endif
 
-#if LIB_DEBUG > 0
-#define LOG_LIB(tag, ...)                \
-	do                                   \
-	{                                    \
-		if (tag)                         \
-			Serial.printf("<%s> ", tag); \
-		Serial.printf(__VA_ARGS__);      \
-		Serial.printf("\n");             \
-	} while (0)
-#else
-#define LOG_LIB(...)
-#endif
+// #if LIB_DEBUG > 0
+// #define //LOG_LIB(tag, ...)                
+// 	do                                   
+// 	{                                    
+// 		if (tag)                         
+// 			Serial.println("<%s> ", tag); 
+// 		Serial.println(__VA_ARGS__);      
+// 		Serial.println("\n");             
+// 	} while (0)
+// #else
+// #define //LOG_LIB(...)
+// #endif

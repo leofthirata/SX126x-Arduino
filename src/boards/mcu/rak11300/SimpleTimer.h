@@ -28,7 +28,7 @@
 #define SIMPLETIMER_H
 
 #if defined(ARDUINO) && ARDUINO >= 100
-#include <Arduino.h>
+#include "porting.hpp"
 #else
 #include <WProgram.h>
 #endif

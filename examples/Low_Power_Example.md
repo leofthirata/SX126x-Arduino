@@ -10,8 +10,8 @@ When using the Arduino framework for the nRF52 modules it is not obvious how to 
 It is not as perfect implemented as for example on the ESP32 MCU's where specific sleep functions can be called.
 But there are several methods, and here we will have a look into two of them. One is using the `delay` function, the other one is to use `semaphores` in your application.
 
-### `delay(milliseconds)`
-This command will send the task into sleep for x milliseconds. This sounds easy to use, however, is not very practical. Because while in the `delay()` function, the task cannot receive any information about external events, like an interrupt from a sensor or from a 9DOF sensor. So for most scenarios the `delay` is not a good solution.
+### `ctx.delay_ms(milliseconds)`
+This command will send the task into sleep for x milliseconds. This sounds easy to use, however, is not very practical. Because while in the `ctx.delay_ms()` function, the task cannot receive any information about external events, like an interrupt from a sensor or from a 9DOF sensor. So for most scenarios the `delay` is not a good solution.
 
 ### `xSemaphoreTakeBinary(semphoreHandle, portMAX_DELAY)`
 FreeRTOS provides `semaphores` to control task switches and let tasks "sleep" while waiting for an event. Looking into the [FreeRTOS documentation](https://www.freertos.org/a00113.html), you can see there are several types of semaphores, named `binary`, `counting`, `mutex` and `recursive mutex`. To keep things simple here, I will use the `binary` semaphore in this example.
@@ -70,7 +70,7 @@ Then we can start the LoRaWAN join process.
 ```cpp
 	// Start Join procedure
 #ifndef MAX_SAVE
-	Serial.println("Start network join request");
+	//Serial.println("Start network join request");
 #endif
 	lmh_join();
 ```
@@ -91,7 +91,7 @@ If we received a downlink package from the LoRaWAN server, we wake up the `taskL
 		if (taskEvent != NULL)
 		{
 #ifndef MAX_SAVE
-			Serial.println("Waking up loop task");
+			//Serial.println("Waking up loop task");
 #endif
 			xSemaphoreGive(taskEvent);
 		}
@@ -105,7 +105,7 @@ After the node has joined the LoRaWAN network, a timer is initialized (see above
 void periodicWakeup(TimerHandle_t unused)
 {
 	// Switch on blue LED to show we are awake
-	digitalWrite(LED_CONN, HIGH);
+	ctx.gpio_set_level(LED_CONN, HIGH);
 	eventType = 1;
 	// Give the semaphore, so the loop task will wake up
 	xSemaphoreGiveFromISR(taskEvent, pdFALSE);
@@ -119,7 +119,7 @@ The loop task is quite simple. First we switch of the indicator LED to show that
 void loop(void)
 {
 	// Switch off blue LED to show we go to sleep
-	digitalWrite(LED_BUILTIN, LOW);
+	ctx.gpio_set_level(LED_BUILTIN, LOW);
 
 ```
 Next we call `xSemaphoreTake()` with `portMAX_DELAY` which puts the task into sleep until the semaphore is available
@@ -131,8 +131,8 @@ Next we call `xSemaphoreTake()` with `portMAX_DELAY` which puts the task into sl
 If the semaphore is given either by the periodic alarm or the SX1262 has received a data package from the LoRaWAN server, the indicator LED is switched on
 ```cpp
 		// Switch on blue LED to show we are awake
-		digitalWrite(LED_BUILTIN, HIGH);
-		delay(500); // Only so we can see the blue LED
+		ctx.gpio_set_level(LED_BUILTIN, HIGH);
+		ctx.delay_ms(500); // Only so we can see the blue LED
 ```
 Then the `eventType` is checked to take actions according to the event. In case a downlink package was received, the package should be handled. For simplicity I skipped that part in this example.
 ```cpp
@@ -141,12 +141,12 @@ Then the `eventType` is checked to take actions according to the event. In case 
 		{
 		case 0: // Wakeup reason is package downlink arrived
 #ifndef MAX_SAVE
-			Serial.println("Received package over LoRaWan");
+			//Serial.println("Received package over LoRaWan");
 #endif
 			if (rcvdLoRaData[0] > 0x1F)
 			{
 #ifndef MAX_SAVE
-				Serial.printf("%s\n", (char *)rcvdLoRaData);
+				//Serial.println("%s\n", (char *)rcvdLoRaData);
 #endif
 			}
 			else
@@ -154,9 +154,9 @@ Then the `eventType` is checked to take actions according to the event. In case 
 #ifndef MAX_SAVE
 				for (int idx = 0; idx < rcvdDataLen; idx++)
 				{
-					Serial.printf("%X ", rcvdLoRaData[idx]);
+					//Serial.println("%X ", rcvdLoRaData[idx]);
 				}
-				Serial.println("");
+				//Serial.println("");
 #endif
 			}
 
@@ -166,7 +166,7 @@ If the wake event was triggered by the periodic timer, a LoRaWan package is sent
 ```cpp
 		case 1: // Wakeup reason is timer
 #ifndef MAX_SAVE
-			Serial.println("Timer wakeup");
+			//Serial.println("Timer wakeup");
 #endif
 			/// \todo read sensor or whatever you need to do frequently
 
@@ -174,13 +174,13 @@ If the wake event was triggered by the periodic timer, a LoRaWan package is sent
 			if (sendLoRaFrame())
 			{
 #ifndef MAX_SAVE
-				Serial.println("LoRaWan package sent successfully");
+				//Serial.println("LoRaWan package sent successfully");
 #endif
 			}
 			else
 			{
 #ifndef MAX_SAVE
-				Serial.println("LoRaWan package send failed");
+				//Serial.println("LoRaWan package send failed");
 				/// \todo maybe you need to retry here?
 #endif
 			}

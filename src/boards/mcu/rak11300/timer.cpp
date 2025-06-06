@@ -101,7 +101,7 @@ void _timer_task(void *pvParameters)
 {
 	/** Dummy value, needed for FreeRTOS queue */
 	int val;
-	LOG_LIB("TIM_T", "Timer task started");
+	//LOG_LIB("TIM_T", "Timer task started");
 	while (1)
 	{
 		// Read from queue (wait max time if queue is empty)
@@ -124,13 +124,13 @@ void TimerConfig(void)
 	_timer_queue = xQueueCreate(1000, sizeof(int));
 	if (_timer_queue == NULL)
 	{
-		LOG_LIB("TIM", "Unable to create queue");
+		//LOG_LIB("TIM", "Unable to create queue");
 	}
 
 	// Initialize the timer task
 	if (xTaskCreate(_timer_task, "TIMER", 4096, NULL, configMAX_PRIORITIES - 1, &_timerTaskHandle))
 	{
-		LOG_LIB("TIM", "Timer task start success");
+		//LOG_LIB("TIM", "Timer task start success");
 	}
 
 	// Initialize one of the three ISR timers to 1 ms interval
@@ -140,9 +140,9 @@ void TimerConfig(void)
 	{
 		if (try_timer == 0)
 		{
-			if (_ITimer0.attachInterruptInterval(500.0, TimerHandler))
+			if (_ITimer0.ctx.attach_irq_ptr(Interval(500.0, TimerHandler))
 			{
-				LOG_LIB("TIM", "Starting ITimer0 OK");
+				//LOG_LIB("TIM", "Starting ITimer0 OK");
 				timer_ok = true;
 			}
 			else
@@ -150,16 +150,16 @@ void TimerConfig(void)
 				try_timer--;
 				if (try_timer == -1)
 				{
-					LOG_LIB("TIM", "FATAL ERROR, NO HARDWARE TIMER AVAILABLE");
+					//LOG_LIB("TIM", "FATAL ERROR, NO HARDWARE TIMER AVAILABLE");
 					return;
 				}
 			}
 		}
 		if (try_timer == 1)
 		{
-			if (_ITimer1.attachInterruptInterval(500.0, TimerHandler))
+			if (_ITimer1.ctx.attach_irq_ptr(Interval(500.0, TimerHandler))
 			{
-				LOG_LIB("TIM", "Starting ITimer1 OK");
+				//LOG_LIB("TIM", "Starting ITimer1 OK");
 				timer_ok = true;
 			}
 			else
@@ -167,16 +167,16 @@ void TimerConfig(void)
 				try_timer--;
 				if (try_timer == -1)
 				{
-					LOG_LIB("TIM", "FATAL ERROR, NO HARDWARE TIMER AVAILABLE");
+					//LOG_LIB("TIM", "FATAL ERROR, NO HARDWARE TIMER AVAILABLE");
 					return;
 				}
 			}
 		}
 		if (try_timer == 2)
 		{
-			if (_ITimer2.attachInterruptInterval(500.0, TimerHandler))
+			if (_ITimer2.ctx.attach_irq_ptr(Interval(500.0, TimerHandler))
 			{
-				LOG_LIB("TIM", "Starting ITimer2 OK");
+				//LOG_LIB("TIM", "Starting ITimer2 OK");
 				timer_ok = true;
 			}
 			else
@@ -184,7 +184,7 @@ void TimerConfig(void)
 				try_timer--;
 				if (try_timer == -1)
 				{
-					LOG_LIB("TIM", "FATAL ERROR, NO HARDWARE TIMER AVAILABLE");
+					//LOG_LIB("TIM", "FATAL ERROR, NO HARDWARE TIMER AVAILABLE");
 					return;
 				}
 			}
@@ -228,7 +228,7 @@ void TimerStart(TimerEvent_t *obj)
 		idx = _simpleTimer.setTimer(obj->ReloadValue, obj->Callback, 0);
 	}
 	obj->timerNum = idx;
-	LOG_LIB("TIM", "Timer %d started as %s with %d ms", idx, obj->oneShot ? "OneShot" : "Recurring", obj->ReloadValue);
+	//LOG_LIB("TIM", "Timer %d started as %s with %d ms", idx, obj->oneShot ? "OneShot" : "Recurring", obj->ReloadValue);
 	skip_timer = false;
 }
 
@@ -243,7 +243,7 @@ void TimerStop(TimerEvent_t *obj)
 	skip_timer = true;
 	int idx = obj->timerNum;
 	_simpleTimer.deleteTimer(idx);
-	LOG_LIB("TIM", "Timer %d stopped manually", idx);
+	//LOG_LIB("TIM", "Timer %d stopped manually", idx);
 	skip_timer = false;
 }
 
@@ -267,7 +267,7 @@ void TimerReset(TimerEvent_t *obj)
 		idx = _simpleTimer.setTimer(obj->ReloadValue, obj->Callback, 0);
 	}
 	obj->timerNum = idx;
-	// LOG_LIB("TIM", "Timer %d reset with %d ms as %s", idx, obj->ReloadValue, obj->oneShot ? "Oneshot" : "Interval");
+	// //LOG_LIB("TIM", "Timer %d reset with %d ms as %s", idx, obj->ReloadValue, obj->oneShot ? "Oneshot" : "Interval");
 	skip_timer = false;
 }
 
@@ -285,7 +285,7 @@ void TimerSetValue(TimerEvent_t *obj, uint32_t value)
 	obj->ReloadValue = value;
 
 	_simpleTimer.changeTime(idx, value);
-	// LOG_LIB("TIM", "Timer %d set to %d ms", idx, obj->ReloadValue);
+	// //LOG_LIB("TIM", "Timer %d set to %d ms", idx, obj->ReloadValue);
 	skip_timer = false;
 }
 

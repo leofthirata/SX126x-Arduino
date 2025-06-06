@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2024
  *
  */
-#include <Arduino.h>
+#include "porting.hpp"
 #include <SX126x-Arduino.h>
 
 // Function declarations
@@ -64,41 +64,41 @@ volatile bool send_now = false;
 void setup(void)
 {
 	// Prepare LED's BLUE ==> TX, GREEN ==> Received a packet
-	pinMode(LED_GREEN, OUTPUT);
-	pinMode(LED_BLUE, OUTPUT);
-	digitalWrite(LED_GREEN, LOW);
-	digitalWrite(LED_BLUE, LOW);
+	ctx.gpio_mode(LED_GREEN, OUTPUT);
+	ctx.gpio_mode(LED_BLUE, OUTPUT);
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_BLUE, LOW);
 
 	// Initialize Serial for debug output
-	Serial.begin(115200);
+	//Serial.begin(115200);
 	time_t serial_timeout = millis();
 	// On nRF52840 the USB serial is not available immediately
 	while (!Serial)
 	{
 		if ((millis() - serial_timeout) < 5000)
 		{
-			delay(100);
-			digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
+			ctx.delay_ms(100);
+			ctx.gpio_set_level(LED_GREEN, !ctx.gpio_read(LED_GREEN));
 		}
 		else
 		{
 			break;
 		}
 	}
-	digitalWrite(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_GREEN, LOW);
 
-	Serial.println("=====================================");
+	//Serial.println("=====================================");
 #ifdef NRF52_SERIES
-	Serial.println("RAK4630 SX126x P2P RX/TX test");
+	//Serial.println("RAK4630 SX126x P2P RX/TX test");
 #elif defined ESP32
-	Serial.println("RAK11200 SX126x P2P RX/TX test");
+	//Serial.println("RAK11200 SX126x P2P RX/TX test");
 #else // RAK11310
-	Serial.println("RAK11310 SX126x P2P RX/TX test");
+	//Serial.println("RAK11310 SX126x P2P RX/TX test");
 #endif
-	Serial.println("=====================================");
+	//Serial.println("=====================================");
 
 	// Initialize the LoRa chip
-	Serial.println("Starting lora_hardware_init");
+	//Serial.println("Starting lora_hardware_init");
 #ifdef NRF52_SERIES
 	lora_rak4630_init();
 #elif defined ESP32
@@ -148,7 +148,7 @@ void setup(void)
 	TimerSetValue(&app_timer, send_interval);
 	TimerStart(&app_timer);
 
-	Serial.printf("Starting P2P Test, send delay = %ld ms\n", send_interval);
+	//Serial.println("Starting P2P Test, send delay = %ld ms\n", send_interval);
 }
 
 /**
@@ -172,7 +172,7 @@ void loop(void)
 		cad_time = millis();
 		Radio.StartCad();
 
-		digitalWrite(LED_BLUE, HIGH);
+		ctx.gpio_set_level(LED_BLUE, HIGH);
 	}
 }
 
@@ -183,13 +183,13 @@ void loop(void)
 void OnTxDone(void)
 {
 #ifdef NRF52_SERIES
-	Serial.println("RAK4630 OnTxDone");
+	//Serial.println("RAK4630 OnTxDone");
 #elif defined ESP32
-	Serial.println("RAK11200 OnTxDone");
+	//Serial.println("RAK11200 OnTxDone");
 #else // RAK11310
-	Serial.println("RAK11310 OnTxDone");
+	//Serial.println("RAK11310 OnTxDone");
 #endif
-	digitalWrite(LED_BLUE, LOW);
+	ctx.gpio_set_level(LED_BLUE, LOW);
 	Radio.Rx(0);
 }
 
@@ -204,27 +204,27 @@ void OnTxDone(void)
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
 #ifdef NRF52_SERIES
-	Serial.println("RAK4630 OnRxDone");
+	//Serial.println("RAK4630 OnRxDone");
 #elif defined ESP32
-	Serial.println("RAK11200 OnRxDone");
+	//Serial.println("RAK11200 OnRxDone");
 #else // RAK11310
-	Serial.println("RAK11310 OnRxDone");
+	//Serial.println("RAK11310 OnRxDone");
 #endif
 
 	memcpy(rx_buffer, payload, size);
 
 #ifdef NRF52_SERIES
-	Serial.printf("RAK4630 RSSI=%d dBm, SNR=%d\n", rssi, snr);
+	//Serial.println("RAK4630 RSSI=%d dBm, SNR=%d\n", rssi, snr);
 #elif defined ESP32
-	Serial.printf("RAK11200 RSSI=%d dBm, SNR=%d\n", rssi, snr);
+	//Serial.println("RAK11200 RSSI=%d dBm, SNR=%d\n", rssi, snr);
 #else // RAK11310
-	Serial.printf("RAK11310 RSSI=%d dBm, SNR=%d\n", rssi, snr);
+	//Serial.println("RAK11310 RSSI=%d dBm, SNR=%d\n", rssi, snr);
 #endif
-	Serial.println("|---------------------|");
-	Serial.printf("Payload: %s\n", rx_buffer);
-	Serial.println("|---------------------|");
+	//Serial.println("|---------------------|");
+	//Serial.println("Payload: %s\n", rx_buffer);
+	//Serial.println("|---------------------|");
 	Radio.Rx(0);
-	digitalWrite(LED_GREEN, HIGH);
+	ctx.gpio_set_level(LED_GREEN, HIGH);
 }
 
 /**
@@ -234,14 +234,14 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 void OnTxTimeout(void)
 {
 #ifdef NRF52_SERIES
-	Serial.println("RAK4630 OnTxTimeout");
+	//Serial.println("RAK4630 OnTxTimeout");
 #elif defined ESP32
-	Serial.println("RAK11200 OnTxTimeout");
+	//Serial.println("RAK11200 OnTxTimeout");
 #else // RAK11310
-	Serial.println("RAK11310 OnTxTimeout");
+	//Serial.println("RAK11310 OnTxTimeout");
 #endif
 	Radio.Rx(0);
-	digitalWrite(LED_BLUE, LOW);
+	ctx.gpio_set_level(LED_BLUE, LOW);
 }
 
 /**
@@ -251,11 +251,11 @@ void OnTxTimeout(void)
 void OnRxTimeout(void)
 {
 #ifdef NRF52_SERIES
-	Serial.println("RAK4630 OnRxTimeout");
+	//Serial.println("RAK4630 OnRxTimeout");
 #elif defined ESP32
-	Serial.println("RAK11200 OnRxTimeout");
+	//Serial.println("RAK11200 OnRxTimeout");
 #else // RAK11310
-	Serial.println("RAK11310 OnRxTimeout");
+	//Serial.println("RAK11310 OnRxTimeout");
 #endif
 	Radio.Rx(0);
 }
@@ -267,11 +267,11 @@ void OnRxTimeout(void)
 void OnRxError(void)
 {
 #ifdef NRF52_SERIES
-	Serial.println("RAK4630 OnRxError");
+	//Serial.println("RAK4630 OnRxError");
 #elif defined ESP32
-	Serial.println("RAK11200 OnRxError");
+	//Serial.println("RAK11200 OnRxError");
 #else // RAK11310
-	Serial.println("RAK11310 OnRxError");
+	//Serial.println("RAK11310 OnRxError");
 #endif
 	Radio.Rx(0);
 }
@@ -289,22 +289,22 @@ void OnCadDone(bool cad_result)
 	if (cad_result)
 	{
 #ifdef NRF52_SERIES
-		Serial.printf("RAK4630 CAD returned channel busy after %ldms --> Skip sending\n", duration);
+		//Serial.println("RAK4630 CAD returned channel busy after %ldms --> Skip sending\n", duration);
 #elif defined ESP32
-		Serial.printf("RAK11200 CAD returned channel busy after %ldms --> Skip sending\n", duration);
+		//Serial.println("RAK11200 CAD returned channel busy after %ldms --> Skip sending\n", duration);
 #else // RAK11310
-		Serial.printf("RAK11310 CAD returned channel busy after %ldms --> Skip sending\n", duration);
+		//Serial.println("RAK11310 CAD returned channel busy after %ldms --> Skip sending\n", duration);
 #endif
-		digitalWrite(LED_BLUE, LOW);
+		ctx.gpio_set_level(LED_BLUE, LOW);
 	}
 	else
 	{
 #ifdef NRF52_SERIES
-		Serial.printf("RAK4630 Channel available after %ldms --> send now\n", duration);
+		//Serial.println("RAK4630 Channel available after %ldms --> send now\n", duration);
 #elif defined ESP32
-		Serial.printf("RAK11200 Channel available after %ldms --> send now\n", duration);
+		//Serial.println("RAK11200 Channel available after %ldms --> send now\n", duration);
 #else // RAK11310
-		Serial.printf("RAK11310 Channel available after %ldms --> send now\n", duration);
+		//Serial.println("RAK11310 Channel available after %ldms --> send now\n", duration);
 #endif
 		Radio.Send((uint8_t *)tx_payload, 9);
 	}
@@ -322,5 +322,5 @@ void OnCadDone(bool cad_result)
 void tx_lora_periodic_handler(void)
 {
 	send_now = true;
-	digitalWrite(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_GREEN, LOW);
 }

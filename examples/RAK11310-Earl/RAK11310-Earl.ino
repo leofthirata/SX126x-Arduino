@@ -14,7 +14,7 @@
  *
  */
 
-#include <Arduino.h>
+#include "porting.hpp"
 #include <SX126x-Arduino.h>
 #include <LoRaWan-Arduino.h>
 #include <task.h>
@@ -105,8 +105,8 @@ void timer2_cb(void)
 
 void setup1()
 {
-	pinMode(LED_BLUE, OUTPUT);
-	digitalWrite(LED_BLUE, LOW);
+	ctx.gpio_mode(LED_BLUE, OUTPUT);
+	ctx.gpio_set_level(LED_BLUE, LOW);
 
 	// Create the app event semaphore
 	app2_sem = xSemaphoreCreateBinary();
@@ -119,48 +119,48 @@ void loop1()
 {
 	if (xSemaphoreTake(app2_sem, portMAX_DELAY) == pdTRUE)
 	{
-		digitalWrite(LED_BLUE, !digitalRead(LED_BLUE));
+		ctx.gpio_set_level(LED_BLUE, !ctx.gpio_read(LED_BLUE));
 		// task_list();
 	}
 }
 
 void setup()
 {
-	pinMode(LED_GREEN, OUTPUT);
-	pinMode(LED_BLUE, OUTPUT);
+	ctx.gpio_mode(LED_GREEN, OUTPUT);
+	ctx.gpio_mode(LED_BLUE, OUTPUT);
 
-	digitalWrite(LED_GREEN, HIGH);
-	digitalWrite(LED_BLUE, HIGH);
+	ctx.gpio_set_level(LED_GREEN, HIGH);
+	ctx.gpio_set_level(LED_BLUE, HIGH);
 
 	time_t serial_timeout = millis();
-	Serial.begin(230400);
+	//Serial.begin(230400);
 	// On nRF52840 the USB serial is not available immediately
 	while (!Serial)
 	{
 		if ((millis() - serial_timeout) < 5000)
 		{
-			delay(100);
-			digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
+			ctx.delay_ms(100);
+			ctx.gpio_set_level(LED_GREEN, !ctx.gpio_read(LED_GREEN));
 		}
 		else
 		{
-			digitalWrite(LED_GREEN, LOW);
+			ctx.gpio_set_level(LED_GREEN, LOW);
 			break;
 		}
 	}
-	digitalWrite(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_GREEN, LOW);
 #ifdef NRF52_SERIES
 	if (lora_rak4630_init() != 0)
 #else
 	if (lora_rak11300_init() != 0)
 #endif
 	{
-		Serial.println("Failed initialization of SX1262");
+		//Serial.println("Failed initialization of SX1262");
 	}
 	else
 	{
 #ifdef LORAWAN
-		Serial.println("Setup LoRaWAN");
+		//Serial.println("Setup LoRaWAN");
 		// Setup the EUIs and Keys
 		lmh_setDevEui(nodeDeviceEUI);
 		lmh_setAppEui(nodeAppEUI);
@@ -170,11 +170,11 @@ void setup()
 		uint32_t err_code = lmh_init(&lora_callbacks, lora_param_init, true, CLASS_A, LORAMAC_REGION_EU868);
 		if (err_code != 0)
 		{
-			Serial.printf("lmh_init failed - %d\n", err_code);
+			//Serial.println("lmh_init failed - %d\n", err_code);
 		}
 
 		// Start Join procedure
-		Serial.println("Join LoRaWAN");
+		//Serial.println("Join LoRaWAN");
 		lmh_join();
 #else
 		// Initialize the Radio callbacks
@@ -204,11 +204,11 @@ void setup()
 						  0, true, 0, 0, LORA_IQ_INVERSION_ON, true);
 
 		// Start LoRa
-		Serial.println("Starting Radio.Rx");
+		//Serial.println("Starting Radio.Rx");
 		Radio.Sleep();
 		Radio.Rx(RX_TIMEOUT_VALUE);
 
-		digitalWrite(LED_BLUE, LOW);
+		ctx.gpio_set_level(LED_BLUE, LOW);
 #endif
 
 		// Create the app event semaphore
@@ -242,18 +242,18 @@ void loop()
 		if (lmh_join_status_get() != LMH_SET)
 		{
 			// Not joined, try again later
-			Serial.println("Did not join network, skip sending frame");
+			//Serial.println("Did not join network, skip sending frame");
 			return;
 		}
 
 		if (tx_active)
 		{
-			Serial.println("Last TX still active, do not send yet");
+			//Serial.println("Last TX still active, do not send yet");
 			// error_flag = true;
 			return;
 		}
 
-		digitalWrite(LED_GREEN, HIGH);
+		ctx.gpio_set_level(LED_GREEN, HIGH);
 		uint32_t i = 0;
 		m_lora_app_data.port = LORAWAN_APP_PORT;
 		// 02683c036701d3237d0399288a0001298a00012a8a0001108a0179017401a7306601
@@ -304,7 +304,7 @@ void loop()
 			/// \todo Workaround. After missing ACK's the DR is reset
 			// lmh_datarate_set(DR_3, false);
 		}
-		Serial.printf("lmh_send result %d\n", error);
+		//Serial.println("lmh_send result %d\n", error);
 
 #else
 		uint32_t i = 0;
@@ -353,7 +353,7 @@ void loop()
  */
 void OnTxDone(void)
 {
-	Serial.println("OnTxDone");
+	//Serial.println("OnTxDone");
 	Radio.Standby();
 	Radio.Rx(RX_TIMEOUT_VALUE);
 }
@@ -362,21 +362,21 @@ void OnTxDone(void)
  */
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-	Serial.println("OnRxDone");
-	delay(10);
+	//Serial.println("OnRxDone");
+	ctx.delay_ms(10);
 	BufferSize = size;
 	memcpy(RcvBuffer, payload, BufferSize);
 
-	Serial.printf("RssiValue=%d dBm, SnrValue=%d\n", rssi, snr);
+	//Serial.println("RssiValue=%d dBm, SnrValue=%d\n", rssi, snr);
 
 	for (int idx = 0; idx < size; idx++)
 	{
-		Serial.printf("%02X ", RcvBuffer[idx]);
+		//Serial.println("%02X ", RcvBuffer[idx]);
 	}
-	Serial.println("");
+	//Serial.println("");
 
-	digitalWrite(LED_GREEN, HIGH);
-	digitalWrite(LED_BLUE, LOW);
+	ctx.gpio_set_level(LED_GREEN, HIGH);
+	ctx.gpio_set_level(LED_BLUE, LOW);
 
 	Radio.Standby();
 	Radio.Rx(RX_TIMEOUT_VALUE);
@@ -387,9 +387,9 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 void OnTxTimeout(void)
 {
 	// Radio.Sleep();
-	Serial.println("OnTxTimeout");
-	digitalWrite(LED_GREEN, LOW);
-	digitalWrite(LED_BLUE, HIGH);
+	//Serial.println("OnTxTimeout");
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_BLUE, HIGH);
 
 	Radio.Standby();
 	Radio.Rx(RX_TIMEOUT_VALUE);
@@ -399,10 +399,10 @@ void OnTxTimeout(void)
  */
 void OnRxTimeout(void)
 {
-	Serial.println("OnRxTimeout");
+	//Serial.println("OnRxTimeout");
 
-	digitalWrite(LED_GREEN, LOW);
-	digitalWrite(LED_BLUE, HIGH);
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_BLUE, HIGH);
 
 	Radio.Standby();
 	Radio.Rx(RX_TIMEOUT_VALUE);
@@ -412,9 +412,9 @@ void OnRxTimeout(void)
  */
 void OnRxError(void)
 {
-	Serial.println("OnRxError");
-	digitalWrite(LED_GREEN, LOW);
-	digitalWrite(LED_BLUE, HIGH);
+	//Serial.println("OnRxError");
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	ctx.gpio_set_level(LED_BLUE, HIGH);
 
 	Radio.Standby();
 	Radio.Rx(RX_TIMEOUT_VALUE);
@@ -427,14 +427,14 @@ void OnCadDone(bool cadResult)
 	time_t duration = millis() - cadTime;
 	if (cadResult)
 	{
-		Serial.printf("CAD returned channel busy after %ldms\n", duration);
+		//Serial.println("CAD returned channel busy after %ldms\n", duration);
 		Radio.Standby();
 		Radio.Rx(RX_TIMEOUT_VALUE);
 	}
 	else
 	{
-		Serial.printf("CAD returned channel free after %ldms\n", duration);
-		Serial.println("Sending a PING in OnCadDone as Master");
+		//Serial.println("CAD returned channel free after %ldms\n", duration);
+		//Serial.println("Sending a PING in OnCadDone as Master");
 		// Send the next PING frame
 		TxdBuffer[0] = 'P';
 		TxdBuffer[1] = 'I';
@@ -455,9 +455,9 @@ void OnCadDone(bool cadResult)
  */
 static void lorawan_join_failed_handler(void)
 {
-	Serial.println("OVER_THE_AIR_ACTIVATION failed!");
-	Serial.println("Check your EUI's and Keys's!");
-	Serial.println("Check if a Gateway is in range!");
+	//Serial.println("OVER_THE_AIR_ACTIVATION failed!");
+	//Serial.println("Check your EUI's and Keys's!");
+	//Serial.println("Check if a Gateway is in range!");
 	lmh_join();
 }
 
@@ -465,9 +465,9 @@ static void lorawan_join_failed_handler(void)
  */
 static void lorawan_has_joined_handler(void)
 {
-	Serial.println("Network Joined");
+	//Serial.println("Network Joined");
 	network_joined = true;
-	digitalWrite(LED_BLUE, LOW);
+	ctx.gpio_set_level(LED_BLUE, LOW);
 }
 
 /**@brief Function for handling LoRaWan received data from Gateway
@@ -476,8 +476,8 @@ static void lorawan_has_joined_handler(void)
  */
 static void lorawan_rx_handler(lmh_app_data_t *app_data)
 {
-	digitalWrite(LED_GREEN, LOW);
-	Serial.printf("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	//Serial.println("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
 				  app_data->port, app_data->buffsize, app_data->rssi, app_data->snr);
 
 	switch (app_data->port)
@@ -518,8 +518,8 @@ static void lorawan_rx_handler(lmh_app_data_t *app_data)
 
 static void lorawan_confirm_class_handler(DeviceClass_t Class)
 {
-	digitalWrite(LED_GREEN, LOW);
-	Serial.printf("switch to class %c done\n", "ABC"[Class]);
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	//Serial.println("switch to class %c done\n", "ABC"[Class]);
 
 	// Informs the server that switch has occurred ASAP
 	m_lora_app_data.buffsize = 0;
@@ -529,15 +529,15 @@ static void lorawan_confirm_class_handler(DeviceClass_t Class)
 
 static void lorawan_unconf_finished(void)
 {
-	digitalWrite(LED_GREEN, LOW);
-	Serial.println("TX unconfirmed finished");
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	//Serial.println("TX unconfirmed finished");
 	tx_active = false;
 }
 
 static void lorawan_conf_finished(bool result)
 {
-	digitalWrite(LED_GREEN, LOW);
-	Serial.printf("TX confirmed finished with %s\n", result ? "ACK" : "NAK");
+	ctx.gpio_set_level(LED_GREEN, LOW);
+	//Serial.println("TX confirmed finished with %s\n", result ? "ACK" : "NAK");
 	tx_active = false;
 }
 
@@ -548,11 +548,11 @@ void task_list(void)
 	TaskStatus_t *pxTaskStatusArray = new TaskStatus_t[tasks];
 	unsigned long runtime;
 	tasks = uxTaskGetSystemState(pxTaskStatusArray, tasks, &runtime);
-	Serial.printf("# Tasks: %d\n", tasks);
-	Serial.println("ID, NAME,            STATE,        PRIO,  CYCLES");
+	//Serial.println("# Tasks: %d\n", tasks);
+	//Serial.println("ID, NAME,            STATE,        PRIO,  CYCLES");
 	for (int i = 0; i < tasks; i++)
 	{
-		Serial.printf("%02d: %-16s %-10s      %d    %lu\n", i, pxTaskStatusArray[i].pcTaskName, eTaskStateName[pxTaskStatusArray[i].eCurrentState], (int)pxTaskStatusArray[i].uxCurrentPriority, pxTaskStatusArray[i].ulRunTimeCounter);
+		//Serial.println("%02d: %-16s %-10s      %d    %lu\n", i, pxTaskStatusArray[i].pcTaskName, eTaskStateName[pxTaskStatusArray[i].eCurrentState], (int)pxTaskStatusArray[i].uxCurrentPriority, pxTaskStatusArray[i].ulRunTimeCounter);
 	}
 	delete[] pxTaskStatusArray;
 }

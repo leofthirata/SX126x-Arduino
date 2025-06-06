@@ -108,7 +108,7 @@ with the lines
 One big problem of `SX126x-Arduino library` was that the handling of SX126x IRQ's is done by a call from the main loop. Heavy MCU load in the `loop()`, or lengthy calls to sub-routines could influence the IRQ handling up to a level where LoRaWAN join sequences failed or downlink packets from the LoRaWAN server were lost.    
     
 ### V2
-In **V2** of the library the function `Radio.IrqProcess();` is no longer needed on ESP32 and nRF52 MCU's (as well on RAK4631 and ISP4520 modules). The callback functions for the events are staying the same, but they are called from the background IRQ handler. They work exactly as before, they can call functions from your application, they can use `Serial.println()` for debug output, ...
+In **V2** of the library the function `Radio.IrqProcess();` is no longer needed on ESP32 and nRF52 MCU's (as well on RAK4631 and ISP4520 modules). The callback functions for the events are staying the same, but they are called from the background IRQ handler. They work exactly as before, they can call functions from your application, they can use `//Serial.println()` for debug output, ...
 
 # IMPORTANT NOTE 1: 
 AVOID LENGTHY TIME CONSUMING ACTIONS INSIDE THE CALLBACKS. USE THE CALLBACKS TO SET FLAGS TO TRIGGER ACTIONS IN THE LOOP()!

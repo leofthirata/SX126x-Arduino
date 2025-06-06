@@ -424,7 +424,7 @@ void RegionRU864ApplyCFList(ApplyCFListParams_t *applyCFList)
 
 			// Initialize alternative frequency to 0
 			newChannel.Rx1Frequency = 0;
-			LOG_LIB("RU864", "Apply CF list: new channel at Freq = %ld", newChannel.Frequency);
+			//LOG_LIB("RU864", "Apply CF list: new channel at Freq = %ld", newChannel.Frequency);
 		}
 		else
 		{
@@ -961,8 +961,8 @@ bool RegionRU864NextChannel(NextChanParams_t *nextChanParams, uint8_t *channel, 
 			*time = nextTxDelay;
 			return true;
 		}
-		LOG_LIB("RU864", "RegionRU864NextChannel Datarate not supported by any channel");
-		delay(100);
+		//LOG_LIB("RU864", "RegionRU864NextChannel Datarate not supported by any channel");
+		ctx.delay_ms(100);
 		// Datarate not supported by any channel, restore defaults
 		ChannelsMask[0] |= LC(1) + LC(2);
 		*time = 0;

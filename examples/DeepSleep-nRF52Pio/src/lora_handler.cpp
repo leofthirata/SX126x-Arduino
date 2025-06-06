@@ -27,7 +27,7 @@ int PIN_LORA_MOSI = 22; // 13;  // LORA SPI MOSI
 int RADIO_TXEN = -1;   // LORA ANTENNA TX ENABLE
 int RADIO_RXEN = -1;   // LORA ANTENNA RX ENABLE
 // Replace PIN_SPI_MISO, PIN_LORA_SCLK, PIN_SPI_MOSI with your
-SPIClass SPI_LORA(NRF_SPIM2, PIN_LORA_MISO, PIN_LORA_SCLK, PIN_LORA_MOSI);
+//SPIClass SPI_LORA(NRF_SPIM2, PIN_LORA_MISO, PIN_LORA_SCLK, PIN_LORA_MOSI);
 
 /** Max size of the data to be transmitted. */
 #define LORAWAN_APP_DATA_BUFF_SIZE 64
@@ -144,7 +144,7 @@ int8_t initLoRaWan(void)
 
 	// Start Join procedure
 #ifndef MAX_SAVE
-	Serial.println("Start network join request");
+	//Serial.println("Start network join request");
 #endif
 	lmh_join();
 
@@ -160,13 +160,13 @@ static void lorawan_has_joined_handler(void)
 	{
 		uint32_t otaaDevAddr = lmh_getDevAddr();
 #ifndef MAX_SAVE
-		Serial.printf("OTAA joined and got dev address %08X\n", otaaDevAddr);
+		//Serial.println("OTAA joined and got dev address %08X\n", otaaDevAddr);
 #endif
 	}
 	else
 	{
 #ifndef MAX_SAVE
-		Serial.println("ABP joined");
+		//Serial.println("ABP joined");
 #endif
 	}
 
@@ -188,7 +188,7 @@ static void lorawan_has_joined_handler(void)
 static void lorawan_rx_handler(lmh_app_data_t *app_data)
 {
 #ifndef MAX_SAVE
-	Serial.printf("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
+	//Serial.println("LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n",
 				  app_data->port, app_data->buffsize, app_data->rssi, app_data->snr);
 #endif
 	switch (app_data->port)
@@ -202,21 +202,21 @@ static void lorawan_rx_handler(lmh_app_data_t *app_data)
 			case 0:
 				lmh_class_request(CLASS_A);
 #ifndef MAX_SAVE
-				Serial.println("Request to switch to class A");
+				//Serial.println("Request to switch to class A");
 #endif
 				break;
 
 			case 1:
 				lmh_class_request(CLASS_B);
 #ifndef MAX_SAVE
-				Serial.println("Request to switch to class B");
+				//Serial.println("Request to switch to class B");
 #endif
 				break;
 
 			case 2:
 				lmh_class_request(CLASS_C);
 #ifndef MAX_SAVE
-				Serial.println("Request to switch to class C");
+				//Serial.println("Request to switch to class C");
 #endif
 				break;
 
@@ -235,7 +235,7 @@ static void lorawan_rx_handler(lmh_app_data_t *app_data)
 		if (taskEvent != NULL)
 		{
 #ifndef MAX_SAVE
-			Serial.println("Waking up loop task");
+			//Serial.println("Waking up loop task");
 #endif
 			xSemaphoreGive(taskEvent);
 		}
@@ -250,7 +250,7 @@ static void lorawan_rx_handler(lmh_app_data_t *app_data)
 static void lorawan_confirm_class_handler(DeviceClass_t Class)
 {
 #ifndef MAX_SAVE
-	Serial.printf("switch to class %c done\n", "ABC"[Class]);
+	//Serial.println("switch to class %c done\n", "ABC"[Class]);
 #endif
 
 	// Informs the server that switch has occurred ASAP
@@ -270,7 +270,7 @@ bool sendLoRaFrame(void)
 	{
 		//Not joined, try again later
 #ifndef MAX_SAVE
-		Serial.println("Did not join network, skip sending frame");
+		//Serial.println("Did not join network, skip sending frame");
 #endif
 		return false;
 	}

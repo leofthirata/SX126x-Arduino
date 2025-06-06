@@ -54,7 +54,7 @@ void settings_rx_callback(uint16_t conn_hdl, BLECharacteristic *chr, uint8_t *da
 {
 	MYLOG("SETT", "Settings received");
 
-	delay(1000);
+	ctx.delay_ms(1000);
 
 	// Check the characteristic
 	if (chr->uuid == lora_data.uuid)
@@ -87,7 +87,7 @@ void settings_rx_callback(uint16_t conn_hdl, BLECharacteristic *chr, uint8_t *da
 		if (g_lorawan_settings.resetRequest)
 		{
 			MYLOG("SETT", "Initiate reset");
-			delay(1000);
+			ctx.delay_ms(1000);
 			sd_nvic_SystemReset();
 		}
 

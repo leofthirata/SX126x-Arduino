@@ -123,7 +123,7 @@ $(function() {
 <div class="line">int RADIO_TXEN = -1;     // LORA ANTENNA TX ENABLE</div>
 <div class="line">int RADIO_RXEN = -1;     // LORA ANTENNA RX ENABLE</div>
 <div class="line">// Replace PIN_SPI_MISO, PIN_SPI_SCK, PIN_SPI_MOSI with your</div>
-<div class="line">SPIClass SPI_LORA(NRF_SPIM2, 14, 12, 13);</div>
+<div class="line">//SPIClass SPI_LORA(NRF_SPIM2, 14, 12, 13);</div>
 <div class="line">#endif</div>
 <div class="line">#endif</div>
 <div class="line"> </div>
@@ -183,8 +183,8 @@ $(function() {
 <div class="line"> </div>
 <div class="line">void setup()</div>
 <div class="line">{</div>
-<div class="line">    pinMode(LED_BUILTIN, OUTPUT);</div>
-<div class="line">    digitalWrite(LED_BUILTIN, LOW);</div>
+<div class="line">    ctx.gpio_mode(LED_BUILTIN, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(LED_BUILTIN, LOW);</div>
 <div class="line"> </div>
 <div class="line">#ifndef RAK4630</div>
 <div class="line">    // Define the HW configuration between MCU and SX126x</div>
@@ -204,15 +204,15 @@ $(function() {
 <div class="line">#endif</div>
 <div class="line"> </div>
 <div class="line">    // Initialize Serial for debug output</div>
-<div class="line">    Serial.begin(115200);</div>
+<div class="line">    //Serial.begin(115200);</div>
 <div class="line"> </div>
-<div class="line">    Serial.println(&quot;=====================================&quot;);</div>
-<div class="line">    Serial.println(&quot;SX126x LoRaWan test&quot;);</div>
-<div class="line">    Serial.println(&quot;=====================================&quot;);</div>
+<div class="line">    //Serial.println(&quot;=====================================&quot;);</div>
+<div class="line">    //Serial.println(&quot;SX126x LoRaWan test&quot;);</div>
+<div class="line">    //Serial.println(&quot;=====================================&quot;);</div>
 <div class="line"> </div>
 <div class="line">#ifdef NRF52_SERIES</div>
-<div class="line">    pinMode(30, OUTPUT);</div>
-<div class="line">    digitalWrite(30, HIGH);</div>
+<div class="line">    ctx.gpio_mode(30, OUTPUT);</div>
+<div class="line">    ctx.gpio_set_level(30, HIGH);</div>
 <div class="line">    // Start BLE if we compile for nRF52</div>
 <div class="line">    initBLE();</div>
 <div class="line">#endif</div>
@@ -221,7 +221,7 @@ $(function() {
 <div class="line">    uint32_t err_code = timers_init();</div>
 <div class="line">    if (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;timers_init failed - %d\n&quot;, err_code);</div>
+<div class="line">        //Serial.println(&quot;timers_init failed - %d\n&quot;, err_code);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">#ifndef RAK4630</div>
@@ -229,14 +229,14 @@ $(function() {
 <div class="line">    err_code = lora_hardware_init(hwConfig);</div>
 <div class="line">    if (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;lora_hardware_init failed - %d\n&quot;, err_code);</div>
+<div class="line">        //Serial.println(&quot;lora_hardware_init failed - %d\n&quot;, err_code);</div>
 <div class="line">    }</div>
 <div class="line">#else</div>
 <div class="line">    // Initialize LoRa chip.</div>
 <div class="line">    err_code = lora_rak4630_init();</div>
 <div class="line">    if (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;lora_hardware_init failed - %d\n&quot;, err_code);</div>
+<div class="line">        //Serial.println(&quot;lora_hardware_init failed - %d\n&quot;, err_code);</div>
 <div class="line">    }</div>
 <div class="line">#endif</div>
 <div class="line"> </div>
@@ -252,7 +252,7 @@ $(function() {
 <div class="line">    err_code = lmh_init(&amp;lora_callbacks, lora_param_init, false);</div>
 <div class="line">    if (err_code != 0)</div>
 <div class="line">    {</div>
-<div class="line">        Serial.printf(&quot;lmh_init failed - %d\n&quot;, err_code);</div>
+<div class="line">        //Serial.println(&quot;lmh_init failed - %d\n&quot;, err_code);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</div>
@@ -271,7 +271,7 @@ $(function() {
 <div class="line">    /// \todo This is for Dragino LPS8 gateway. How about other gateways???</div>
 <div class="line">    if (!lmh_setSubBandChannels(1))</div>
 <div class="line">    {</div>
-<div class="line">        Serial.println(&quot;lmh_setSubBandChannels failed. Wrong sub band requested?&quot;);</div>
+<div class="line">        //Serial.println(&quot;lmh_setSubBandChannels failed. Wrong sub band requested?&quot;);</div>
 <div class="line">    }</div>
 <div class="line"> </div>
 <div class="line">    // Start Join procedure</div>
@@ -285,16 +285,16 @@ $(function() {
 <div class="line">    Radio.IrqProcess();</div>
 <div class="line">#endif</div>
 <div class="line">    // We are on FreeRTOS, give other tasks a chance to run</div>
-<div class="line">    // delay(100);</div>
+<div class="line">    // ctx.delay_ms(100);</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line">/**@brief LoRa function for handling OTAA join failed</div>
 <div class="line">*/</div>
 <div class="line">static void lorawan_join_failed_handler(void)</div>
 <div class="line">{</div>
-<div class="line">    Serial.println(&quot;OVER_THE_AIR_ACTIVATION failed!&quot;);</div>
-<div class="line">    Serial.println(&quot;Check your EUI&#39;s and Keys&#39;s!&quot;);</div>
-<div class="line">    Serial.println(&quot;Check if a Gateway is in range!&quot;);</div>
+<div class="line">    //Serial.println(&quot;OVER_THE_AIR_ACTIVATION failed!&quot;);</div>
+<div class="line">    //Serial.println(&quot;Check your EUI&#39;s and Keys&#39;s!&quot;);</div>
+<div class="line">    //Serial.println(&quot;Check if a Gateway is in range!&quot;);</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line">/**@brief LoRa function for handling HasJoined event.</div>
@@ -302,9 +302,9 @@ $(function() {
 <div class="line">static void lorawan_has_joined_handler(void)</div>
 <div class="line">{</div>
 <div class="line">#if (OVER_THE_AIR_ACTIVATION != 0)</div>
-<div class="line">    Serial.println(&quot;Network Joined&quot;);</div>
+<div class="line">    //Serial.println(&quot;Network Joined&quot;);</div>
 <div class="line">#else</div>
-<div class="line">    Serial.println(&quot;OVER_THE_AIR_ACTIVATION != 0&quot;);</div>
+<div class="line">    //Serial.println(&quot;OVER_THE_AIR_ACTIVATION != 0&quot;);</div>
 <div class="line"> </div>
 <div class="line">#endif</div>
 <div class="line">    lmh_class_request(CLASS_A);</div>
@@ -319,7 +319,7 @@ $(function() {
 <div class="line">*/</div>
 <div class="line">static void lorawan_rx_handler(lmh_app_data_t *app_data)</div>
 <div class="line">{</div>
-<div class="line">    Serial.printf(&quot;LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n&quot;,</div>
+<div class="line">    //Serial.println(&quot;LoRa Packet received on port %d, size:%d, rssi:%d, snr:%d\n&quot;,</div>
 <div class="line">                  app_data-&gt;port, app_data-&gt;buffsize, app_data-&gt;rssi, app_data-&gt;snr);</div>
 <div class="line"> </div>
 <div class="line">    switch (app_data-&gt;port)</div>
@@ -359,7 +359,7 @@ $(function() {
 <div class="line"> </div>
 <div class="line">static void lorawan_confirm_class_handler(DeviceClass_t Class)</div>
 <div class="line">{</div>
-<div class="line">    Serial.printf(&quot;switch to class %c done\n&quot;, &quot;ABC&quot;[Class]);</div>
+<div class="line">    //Serial.println(&quot;switch to class %c done\n&quot;, &quot;ABC&quot;[Class]);</div>
 <div class="line"> </div>
 <div class="line">    // Informs the server that switch has occurred ASAP</div>
 <div class="line">    m_lora_app_data.buffsize = 0;</div>
@@ -372,7 +372,7 @@ $(function() {
 <div class="line">    if (lmh_join_status_get() != LMH_SET)</div>
 <div class="line">    {</div>
 <div class="line">        //Not joined, try again later</div>
-<div class="line">        Serial.println(&quot;Did not join network, skip sending frame&quot;);</div>
+<div class="line">        //Serial.println(&quot;Did not join network, skip sending frame&quot;);</div>
 <div class="line">        return;</div>
 <div class="line">    }</div>
 <div class="line"> </div>
@@ -393,7 +393,7 @@ $(function() {
 <div class="line">    m_lora_app_data.buffsize = i;</div>
 <div class="line"> </div>
 <div class="line">    lmh_error_status error = lmh_send(&amp;m_lora_app_data, LMH_UNCONFIRMED_MSG);</div>
-<div class="line">    Serial.printf(&quot;lmh_send result %d\n&quot;, error);</div>
+<div class="line">    //Serial.println(&quot;lmh_send result %d\n&quot;, error);</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line">/**@brief Function for handling a LoRa tx timer timeout event.</div>
@@ -402,7 +402,7 @@ $(function() {
 <div class="line">{</div>
 <div class="line">    TimerSetValue(&amp;appTimer, LORAWAN_APP_TX_DUTYCYCLE);</div>
 <div class="line">    TimerStart(&amp;appTimer);</div>
-<div class="line">    Serial.println(&quot;Sending frame&quot;);</div>
+<div class="line">    //Serial.println(&quot;Sending frame&quot;);</div>
 <div class="line">    send_lora_frame();</div>
 <div class="line">}</div>
 <div class="line"> </div>
