@@ -35,9 +35,9 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
  *****************************************************************************/
 #include "boards/mcu/timer.h"
 #include "boards/mcu/board.h"
-#include "esp_timer.h"
+#include "TimerESP.hpp"
 
-Ticker timerTickers[10];
+Timer timerTickers[10];
 uint32_t timerTimes[10];
 bool timerInUse[10] = {false, false, false, false, false, false, false, false, false, false};
 
@@ -55,7 +55,6 @@ void TimerConfig(void)
 
 void TimerInit(TimerEvent_t *obj, void (*callback)(void))
 {
-	// Look for an available Ticker
 	for (int idx = 0; idx < 10; idx++)
 	{
 		if (timerInUse[idx] == false)
@@ -63,11 +62,15 @@ void TimerInit(TimerEvent_t *obj, void (*callback)(void))
 			timerInUse[idx] = true;
 			obj->timerNum = idx;
 			obj->Callback = callback;
+
+			if (obj->oneShot)
+				timerTickers[idx].begin(10000, obj->Callback, true);
+			else
+				timerTickers[idx].begin(10000, obj->Callback, false);
+
 			return;
 		}
 	}
-	//LOG_LIB("TIM", "No more timers available!");
-	/// \todo We run out of tickers, what do we do now???
 }
 
 void timerCallback(TimerEvent_t *obj)
@@ -78,34 +81,19 @@ void timerCallback(TimerEvent_t *obj)
 void TimerStart(TimerEvent_t *obj)
 {
 	int idx = obj->timerNum;
-	if (obj->oneShot)
-	{
-		timerTickers[idx].once_ms(timerTimes[idx], obj->Callback);
-	}
-	else
-	{
-		timerTickers[idx].attach_ms(timerTimes[idx], obj->Callback);
-	}
+	timerTickers[idx].start();
 }
 
 void TimerStop(TimerEvent_t *obj)
 {
 	int idx = obj->timerNum;
-	timerTickers[idx].detach();
+	timerTickers[idx].stop();
 }
 
 void TimerReset(TimerEvent_t *obj)
 {
 	int idx = obj->timerNum;
-	timerTickers[idx].detach();
-	if (obj->oneShot)
-	{
-		timerTickers[idx].once_ms(timerTimes[idx], obj->Callback);
-	}
-	else
-	{
-		timerTickers[idx].attach_ms(timerTimes[idx], obj->Callback);
-	}
+	timerTickers[idx].reset();
 }
 
 void TimerSetValue(TimerEvent_t *obj, uint32_t value)

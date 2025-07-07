@@ -37,7 +37,6 @@ Maintainer: Miguel Luis and Gregory Cristian
 
 #include "porting.hpp"
 #include "boards/mcu/board.h"
-#include "boards/mcu/spi_board.h"
 #include "radio/sx126x/sx126x.h"
 #include "sx126x-board.h"
 

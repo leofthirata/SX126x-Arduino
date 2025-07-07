@@ -1,0 +1,3 @@
+[submodule "libs/lora"]
+	path = libs/lora
+	url = git@github.com:leofthirata/esp32-sx1262.git
