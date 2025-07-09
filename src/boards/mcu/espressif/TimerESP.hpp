@@ -2,10 +2,10 @@
 
 #include "esp_timer.h"
 
-class Timer
+class TimerESP
 {
 public:
-    ~Timer() { stop(); }
+    ~TimerESP() { stop(); }
     void begin(uint32_t timeout, void (*cb)(void), bool one_shot);
     void start();
     void stop();

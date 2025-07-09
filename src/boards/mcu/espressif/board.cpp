@@ -68,10 +68,10 @@ uint8_t BoardGetBatteryLevel(void)
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 void IRAM_ATTR BoardDisableIrq(void)
 {
-	portENTER_CRITICAL(&mux);
+	// portENTER_CRITICAL(&mux);
 }
 
 void IRAM_ATTR BoardEnableIrq(void)
 {
-	portEXIT_CRITICAL(&mux);
+	// portEXIT_CRITICAL(&mux);
 }

@@ -31,10 +31,9 @@ typedef void (*gpio_mode_ptr)(int pin, int mode);
 typedef void (*attach_irq_ptr)(int pin, void (*)(), int mode);
 typedef void (*detach_irq_ptr)(int pin);
 typedef void (*gpio_set_level_ptr)(int pin, int level);
-typedef uint8_t (*gpio_read_ptr)(int pin);
+typedef int (*gpio_read_ptr)(int pin);
 
 typedef void (*delay_ms_ptr)(uint32_t ms);
-// typedef void (*print_ptr)(__VA_ARGS__);
 
 struct ctx_t
 {
@@ -48,8 +47,6 @@ struct ctx_t
     gpio_read_ptr gpio_read;
 
     delay_ms_ptr   delay_ms;
-
-    // print_ptr print;
 };
 
 extern ctx_t ctx;

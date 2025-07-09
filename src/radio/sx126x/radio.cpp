@@ -1277,58 +1277,38 @@ uint16_t RadioGetSyncWord(void)
 
 uint32_t RadioGetWakeupTime(void)
 {
-	if (_hwConfig.USE_DIO3_TCXO)
-	{
-		return (RADIO_TCXO_SETUP_TIME + RADIO_WAKEUP_TIME);
-	}
-	else
-	{
-		return (RADIO_WAKEUP_TIME);
-	}
+	return _hwConfig.USE_DIO3_TCXO ? (RADIO_TCXO_SETUP_TIME + RADIO_WAKEUP_TIME) : RADIO_WAKEUP_TIME;
+}
+
+void RadioOnTimeoutIrq(void)
+{
+	BoardDisableIrq();
+	BoardEnableIrq();
+
+	RadioBgIrqProcess();
+	RadioStandby();
+	RadioSleep();
 }
 
 void RadioOnTxTimeoutIrq(void)
 {
-	// if ((RadioEvents != NULL) && (RadioEvents->TxTimeout != NULL))
-	// {
-	// 	RadioEvents->TxTimeout();
-	// }
-	BoardDisableIrq();
 	TimerTxTimeout = true;
-	BoardEnableIrq();
 	TimerStop(&TxTimeoutTimer);
 
-	RadioBgIrqProcess();
-	RadioStandby();
-	RadioSleep();
+	RadioOnTimeoutIrq();
 }
 
 void RadioOnRxTimeoutIrq(void)
 {
-	// if ((RadioEvents != NULL) && (RadioEvents->RxTimeout != NULL))
-	// {
-	// 	RadioEvents->RxTimeout();
-	// }
-	BoardDisableIrq();
 	TimerRxTimeout = true;
-	BoardEnableIrq();
 	TimerStop(&RxTimeoutTimer);
 
-	RadioBgIrqProcess();
-	RadioStandby();
-	RadioSleep();
+	RadioOnTimeoutIrq();
 }
 
 void RadioEnforceLowDRopt(bool enforce)
 {
-	if (enforce)
-	{
-		force_low_dr_opt = true;
-	}
-	else
-	{
-		force_low_dr_opt = false;
-	}
+	force_low_dr_opt = enforce ? true : false;
 }
 
 /** Semaphore used by SX126x IRQ handler to wake up LoRaWAN task */
@@ -1340,7 +1320,6 @@ void IRAM_ATTR RadioOnDioIrq(void)
 	BoardDisableIrq();
 	IrqFired = true;
 	BoardEnableIrq();
-	// Wake up LoRa event handler on nRF52 and ESP32
 	xSemaphoreGiveFromISR(_lora_sem, &xHigherPriorityTaskWoken);
 }
 

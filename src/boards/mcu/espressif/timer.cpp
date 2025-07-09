@@ -37,7 +37,7 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
 #include "boards/mcu/board.h"
 #include "TimerESP.hpp"
 
-Timer timerTickers[10];
+TimerESP timerTickers[10];
 uint32_t timerTimes[10];
 bool timerInUse[10] = {false, false, false, false, false, false, false, false, false, false};
 
@@ -46,11 +46,6 @@ bool timerInUse[10] = {false, false, false, false, false, false, false, false, f
 static unsigned long millis() 
 {
 	return (unsigned long)(esp_timer_get_time() / 1000ULL);
-}
-
-void TimerConfig(void)
-{
-	/// \todo Nothing to do here for ESP32
 }
 
 void TimerInit(TimerEvent_t *obj, void (*callback)(void))
@@ -64,9 +59,9 @@ void TimerInit(TimerEvent_t *obj, void (*callback)(void))
 			obj->Callback = callback;
 
 			if (obj->oneShot)
-				timerTickers[idx].begin(10000, obj->Callback, true);
-			else
 				timerTickers[idx].begin(10000, obj->Callback, false);
+			else
+				timerTickers[idx].begin(10000, obj->Callback, true);
 
 			return;
 		}
@@ -100,6 +95,7 @@ void TimerSetValue(TimerEvent_t *obj, uint32_t value)
 {
 	int idx = obj->timerNum;
 	timerTimes[idx] = value;
+	timerTickers[idx].setPeriod(value);
 }
 
 TimerTime_t TimerGetCurrentTime(void)

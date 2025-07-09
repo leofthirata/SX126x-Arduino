@@ -1146,13 +1146,9 @@ static void OnRadioTxTimeout(void)
 	//LOG_LIB("LM", "OnRadioTxTimeout");
 
 	if (LoRaMacDeviceClass != CLASS_C)
-	{
 		Radio.Sleep();
-	}
 	else
-	{
 		OnRxWindow2TimerEvent();
-	}
 
 	McpsConfirm.Status = LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT;
 	MlmeConfirm.Status = LORAMAC_EVENT_INFO_STATUS_TX_TIMEOUT;
@@ -1164,13 +1160,9 @@ static void OnRadioRxError(void)
 	//LOG_LIB("LM", "OnRadioRxError");
 
 	if (LoRaMacDeviceClass != CLASS_C)
-	{
 		Radio.Sleep();
-	}
 	else
-	{
 		OnRxWindow2TimerEvent();
-	}
 
 	if (RxSlot == 0)
 	{

@@ -25,7 +25,6 @@
 #include "boards/mcu/board.h"
 #include "sx126x.h"
 #include "boards/sx126x/sx126x-board.h"
-
 /*!
  * \brief Radio registers definition
  */

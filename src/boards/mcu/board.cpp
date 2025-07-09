@@ -37,6 +37,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "esp_log.h"
 
 #ifndef TASK_PRIO_NORMAL
 #define TASK_PRIO_NORMAL 1
@@ -76,34 +77,21 @@ uint32_t lora_hardware_init(hw_config hwConfig)
 	_hwConfig.USE_RXEN_ANT_PWR = hwConfig.USE_RXEN_ANT_PWR;		  // RXEN used as power for antenna switch
 	_hwConfig.TCXO_CTRL_VOLTAGE = hwConfig.TCXO_CTRL_VOLTAGE;
 
-	TimerConfig();
-
 	SX126xIoInit();
 
 	// After power on the sync word should be 2414. 4434 could be possible on a restart
 	// If we got something else, something is wrong.
 	uint16_t readSyncWord = 0;
+
 	SX126xReadRegisters(REG_LR_SYNCWORD, (uint8_t *)&readSyncWord, 2);
 
-	//LOG_LIB("BRD", "SyncWord = %04X", readSyncWord);
+	ESP_LOGE("DEBUG", "SyncWord = %04X", readSyncWord);
 
 	// There could be a custom syncword, better test for 0xFFFF
 	// if ((readSyncWord == 0x2414) || (readSyncWord == 0x4434))
 	if (readSyncWord != 0xFFFF)
-	{
-#if defined NRF52_SERIES || defined ESP32 || defined ARDUINO_ARCH_RP2040
-		if (start_lora_task())
-		{
-			return 0;
-		}
-		else
-		{
-			return 1;
-		}
-#else
-		return 0;
-#endif
-	}
+		return start_lora_task() ? 0 : 1;
+	
 	return 1;
 }
 
@@ -133,38 +121,20 @@ uint32_t lora_hardware_re_init(hw_config hwConfig)
 	uint16_t readSyncWord = 0;
 	SX126xReadRegisters(REG_LR_SYNCWORD, (uint8_t *)&readSyncWord, 2);
 
-	//LOG_LIB("BRD", "SyncWord = %04X", readSyncWord);
+	ESP_LOGE("DEBUG", "SyncWord = %04X", readSyncWord);
 
 	// There could be a custom syncword, better test for 0xFFFF
 	// if ((readSyncWord == 0x2414) || (readSyncWord == 0x4434))
 	if (readSyncWord != 0xFFFF)
-	{
-#if defined NRF52_SERIES || defined ESP32 || defined ARDUINO_ARCH_RP2040
-		if (start_lora_task())
-		{
-			return 0;
-		}
-		else
-		{
-			return 1;
-		}
-#else
-		return 0;
-#endif
-	}
+		return start_lora_task() ? 0 : 1;
+	
 	return 1;
 }
 
-#if defined NRF52_SERIES || defined ESP32 || defined ARDUINO_RAKWIRELESS_RAK11300
 void _lora_task(void *pvParameters)
 {
-	//LOG_LIB("BRD", "LoRa Task started");
-
-	while (1)
-	{
-		if (xSemaphoreTake(_lora_sem, portMAX_DELAY) == pdTRUE)
-		{
-			//LOG_LIB("BRD", "LoRa task wakeup");
+	while (1) {
+		if (xSemaphoreTake(_lora_sem, portMAX_DELAY) == pdTRUE) {
 			// Handle Radio events
 			Radio.BgIrqProcess();
 		}
@@ -178,61 +148,14 @@ bool start_lora_task(void)
 	// Initialize semaphore
 	xSemaphoreGive(_lora_sem);
 
-	xSemaphoreTake(_lora_sem, 10);
-
 	if (!xTaskCreate(_lora_task, "LORA", 4096, NULL, TASK_PRIO_NORMAL, &_loraTaskHandle))
-	{
 		return false;
-	}
+
 	return true;
 }
-#endif
-
-#if defined ARDUINO_ARCH_RP2040 && not defined ARDUINO_RAKWIRELESS_RAK11300
-#include <mbed.h>
-#include <rtos.h>
-using namespace rtos;
-using namespace mbed;
-
-/** The event handler thread */
-Thread _thread_handle_lora(osPriorityAboveNormal, 4096);
-
-/** Thread id for lora event thread */
-osThreadId _lora_task_thread = NULL;
-
-// Task to handle timer events
-void _lora_task()
-{
-	_lora_task_thread = osThreadGetId();
-	while (true)
-	{
-		// Wait for event
-		osSignalWait(0x1, osWaitForever);
-
-		// //LOG_LIB("TIM", "LoRa IRQ");
-		// Handle Radio events
-		Radio.BgIrqProcess();
-
-		yield();
-	}
-}
-
-bool start_lora_task(void)
-{
-	_thread_handle_lora.start(_lora_task);
-	_thread_handle_lora.set_priority(osPriorityAboveNormal);
-
-	/// \todo how to detect that the task is really created
-	return true;
-}
-#endif
 
 void lora_hardware_uninit(void)
 {
-#if defined NRF52_SERIES || defined ESP32 || defined ARDUINO_RAKWIRELESS_RAK11300
-	vTaskSuspend(_loraTaskHandle);
-
-#endif
 	SX126xIoDeInit();
 }
 

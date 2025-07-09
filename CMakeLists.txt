@@ -1,6 +1,7 @@
 set(SX126x_Arduino_srcs 
     src/boards/mcu/espressif/board.cpp
     src/boards/mcu/espressif/timer.cpp
+    src/boards/mcu/espressif/TimerESP.cpp
     src/boards/mcu/board.cpp
     src/boards/sx126x/sx126x-board.cpp
     src/mac/LoRaMac.cpp
@@ -27,7 +28,7 @@ set(SX126x_Arduino_srcs
 
 idf_component_register(SRCS ${SX126x_Arduino_srcs}
                       INCLUDE_DIRS "src/radio/sx126x/" "src"
-                      REQUIRES esp_timer
+                      REQUIRES esp_timer driver
                       )
 #https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/build-system.html#controlling-component-compilation
 #target_compile_options(${COMPONENT_LIB} PRIVATE -DCORE_DEBUG_LEVEL=ARDUHAL_LOG_LEVEL_DEBUG)

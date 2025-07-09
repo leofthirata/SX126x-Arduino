@@ -1,22 +1,20 @@
-#include "TimerESP.h"
+#include "TimerESP.hpp"
 
-void Timer::begin(uint32_t timeout, void (*cb)(void), bool one_shot)
+void TimerESP::begin(uint32_t timeout, void (*cb)(void), bool one_shot)
 {
     this->one_shot = one_shot;
-    this->timeout = timeout;
+    this->timeout = timeout * 1000;
 
     const esp_timer_create_args_t args = {
-        .callback = &cb,
+        .callback = reinterpret_cast<void(*)(void*)>(cb),
         .arg = this,
         .name = "timer"
     };
 
     ESP_ERROR_CHECK(esp_timer_create(&args, &timer));
-
-    start();
 }
 
-void Timer::start()
+void TimerESP::start()
 {
     if (esp_timer_is_active(timer))
         esp_timer_stop(timer);
@@ -27,19 +25,19 @@ void Timer::start()
         esp_timer_start_periodic(timer, timeout);
 }
 
-void Timer::stop()
+void TimerESP::stop()
 {
     if (esp_timer_is_active(timer))
         esp_timer_stop(timer);
 }
 
-void Timer::reset()
+void TimerESP::reset()
 {
     start();
 }
 
-void Timer::setPeriod(uint32_t timeout)
+void TimerESP::setPeriod(uint32_t timeout)
 {
-    this->timeout = timeout;
+    this->timeout = timeout * 1000;
     start();
 }
